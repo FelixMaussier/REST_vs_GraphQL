@@ -1,0 +1,41 @@
+REST_GRAPHQL
+ ┣ database
+ ┃  ┗ db.sql
+ ┣ frontend
+ ┃  ┣ .gitignore
+ ┃  ┣ next-env.d.ts
+ ┃  ┣ next.config.ts
+ ┃  ┣ package-lock.json
+ ┃  ┣ package.json
+ ┃  ┣ postcss.config.mjs
+ ┃  ┣ README.md
+ ┃  ┗ tsconfig.json
+ ┣ GraphQL
+ ┃  ┣ src
+ ┃  ┃  ┣ config
+ ┃  ┃  ┃  ┗ db.ts
+ ┃  ┃  ┣ models
+ ┃  ┃  ┃  ┗ product.ts
+ ┃  ┃  ┣ resolvers
+ ┃  ┃  ┃  ┗ resolver.js
+ ┃  ┃  ┣ schemas
+ ┃  ┃  ┃  ┗ schema.ts
+ ┃  ┃  ┣ app.ts
+ ┃  ┃  ┗ server.ts
+ ┃  ┣ package-lock.json
+ ┃  ┗ package.json
+ ┣ REST
+ ┃  ┣ src
+ ┃  ┃  ┣ config
+ ┃  ┃  ┃  ┗ db.ts
+ ┃  ┃  ┣ models
+ ┃  ┃  ┃  ┗ product.ts
+ ┃  ┃  ┣ routes
+ ┃  ┃  ┃  ┗ routes.ts
+ ┃  ┃  ┣ app.ts
+ ┃  ┃  ┗ server.ts
+ ┃  ┣ package-lock.json
+ ┃  ┣ package.json
+ ┃  ┗ tsconfig.json
+ ┣ .DS_Store
+ ┗ .env
