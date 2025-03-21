@@ -20,4 +20,10 @@ api.get('/products/:id', (req, res) => {
     res.send(`Hello would you like to get the product with the id of ${req.params.id}?`);
 });
 
+api.delete('/delete', (req, res) => {
+    res.send('Hello DELETE');
+});
+
+
+
 export default api;

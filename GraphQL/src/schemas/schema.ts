@@ -1,6 +1,9 @@
-import { GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLID, GraphQLList } from 'graphql';
+import { GraphQLObjectType, GraphQLSchema, GraphQLList, GraphQLString, GraphQLID } from 'graphql';
+import db from '../config/db';
+import resolvers from '../resolvers/resolver';
 
-const ProductDef = new GraphQLObjectType({
+
+const ProductType = new GraphQLObjectType({
   name: 'Product',
   fields: () => ({
     id: { type: GraphQLID },
@@ -10,20 +13,35 @@ const ProductDef = new GraphQLObjectType({
   })
 });
 
+
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    products: {
-      type: new GraphQLList(ProductDef),
-      resolve(parent, args) {
-        //return products;
-      }
+    getProducts: {
+      type: new GraphQLList(ProductType),
+      resolve: resolvers.Query.getProducts
     }
   }
 });
 
 
+const Mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    createProduct: {
+      type: GraphQLString,
+      args: {
+        name: { type: GraphQLString },
+        price: { type: GraphQLString },
+        description: { type: GraphQLString }
+      },
+      resolve: resolvers.Mutation.createUser
+    }
+  }
+});
+
 
 export default new GraphQLSchema({
-  query: RootQuery
+  query: RootQuery,
+  mutation: Mutation
 });
