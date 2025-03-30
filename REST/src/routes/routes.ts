@@ -1,6 +1,7 @@
 import express from 'express';
 const api = express.Router();
 import db from '../config/db';
+import e from 'express';
 
 api.get('/', async (req, res) => {
     const products = await db('products').select('*');
@@ -20,8 +21,8 @@ api.get('/products/:id', (req, res) => {
     res.send(`Hello would you like to get the product with the id of ${req.params.id}?`);
 });
 
-api.delete('/delete', (req, res) => {
-    res.send('Hello DELETE');
+api.post('/products', (req, res) => {
+    res.send('Hello would you like to create a product?');
 });
 
 
