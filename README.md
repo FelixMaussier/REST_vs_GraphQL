@@ -20,7 +20,7 @@ The client runs on Next.js on port: 3000
 The GraphQL api runs on port: 3001
 ```
 ### REST
-bash```
+```bash
 The REST api runs on port: 3002
 ```
 
