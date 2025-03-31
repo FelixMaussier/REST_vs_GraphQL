@@ -1,5 +1,7 @@
 import React from 'react';
 import '../styles/Header.css';
+import Link from 'next/link';
+
 
 export default function Header() {
 
@@ -10,9 +12,9 @@ export default function Header() {
             </div>
             <nav>
                 <ul className="nav-list">
-                    <li><a href="/">REST</a></li>
-                    <li><a href="/about">GraphQL</a></li>
-                    <li><a href="/contact">Author</a></li>
+                    <li><Link href="/RestPage">REST</Link></li>
+                    <li><Link href="/graphPage">GraphQL</Link></li>
+                    <li><Link href="/contact">Author</Link></li>
                 </ul>
             </nav>
         </header>
