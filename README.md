@@ -12,10 +12,15 @@ npm install express knex pg express-graphql graphql
 
 # How to run
 ### Client
+```bash
 The client runs on Next.js on port: 3000
-
+```
 ### GraphQL
+```bash
 The GraphQL api runs on port: 3001
+```
 ### REST
+bash```
 The REST api runs on port: 3002
+```
 
