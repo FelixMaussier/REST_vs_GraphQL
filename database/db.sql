@@ -15,4 +15,6 @@
 -- INSERT INTO products (name, price, description) VALUES ('Mango', 79.99, 'Mango is a good fruit');
 -- INSERT INTO products (name, price, description) VALUES ('Papaya', 89.99, 'Papaya is a good fruit'); 
 
-SELECT * FROM products;
+--SELECT * FROM products;
+SHOW COLUMNS FROM products;
+
