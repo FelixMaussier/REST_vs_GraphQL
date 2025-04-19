@@ -2,16 +2,11 @@ import db from '../config/db';
 
 const resolvers = {
     Query: {
-        getProducts: () => {
-            return db.select('*').from('products');
+        getKategori: () => {
+            return db.select('*').from('kategori');
         },
-        getProductDescription: () => {
-            return db.select('description').from('products');
-        }
-    },
-    Mutation: {
-        createUser: () => {
-            return "product created";
+        getProducts: () => {
+            return db.select('*').from('produkt');
         }
     }
 };

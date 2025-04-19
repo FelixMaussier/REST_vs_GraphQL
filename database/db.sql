@@ -1,20 +1,159 @@
--- CREATE TABLE "products" (
+--PRODUKT TABEL
+-- CREATE TABLE Produkt (
 --     id SERIAL PRIMARY KEY,
---     name VARCHAR(255) NOT NULL,
---     price DECIMAL(10, 2) NOT NULL,
---     description TEXT
+--     artikelnummer VARCHAR(50) NOT NULL UNIQUE,
+--     namn VARCHAR(100) NOT NULL,
+--     pris DECIMAL(10, 2) NOT NULL,
+--     lagerantal INT DEFAULT 0,
+--     vikt DECIMAL(10, 2) DEFAULT 0,
+--     kategori_id INT,
+--     beskrivning TEXT,
+--     FOREIGN KEY (kategori_id) REFERENCES Kategori(id)
 -- );
 
--- INSERT INTO products (name, price, description) VALUES ('Apple', 9.99, 'An apple a day keeps the doctor away');
--- INSERT INTO products (name, price, description) VALUES ('Banana', 19.99, 'A banana a day keeps the doctor away');
--- INSERT INTO products (name, price, description) VALUES ('Orange', 29.99, 'An orange a day keeps the doctor away');
--- INSERT INTO products (name, price, description) VALUES ('Pineapple', 39.99, 'A pineapple a day keeps the doctor away');
--- INSERT INTO products (name, price, description) VALUES ('Grapes', 49.99, 'Grapes are good for health');
--- INSERT INTO products (name, price, description) VALUES ('Strawberry', 59.99, 'Strawberry is a good fruit');
--- INSERT INTO products (name, price, description) VALUES ('Watermelon', 69.99, 'Watermelon is a good fruit');
--- INSERT INTO products (name, price, description) VALUES ('Mango', 79.99, 'Mango is a good fruit');
--- INSERT INTO products (name, price, description) VALUES ('Papaya', 89.99, 'Papaya is a good fruit'); 
 
---SELECT * FROM products;
-SHOW COLUMNS FROM products;
 
+
+--PRODUCKT ATTRIBUT TABLE
+-- CREATE TABLE ProduktAttribut (
+--     id SERIAL PRIMARY KEY,
+--     produkt_id INT,
+--     attribut_namn VARCHAR(100) NOT NULL,
+--     attribut_varde VARCHAR(100) NOT NULL,
+--     skapad_datum TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     FOREIGN KEY (produkt_id) REFERENCES Produkt(id)
+-- );
+
+
+--KATEGORI TABEL
+-- CREATE TABLE Kategori (
+--     id SERIAL PRIMARY KEY,
+--     namn VARCHAR(100) NOT NULL,
+--     beskrivning TEXT,
+--     skapad_datum TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     uppdaterad_datum TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
+
+-- INSERT INTO Kategori (namn, beskrivning) VALUES
+-- ('Frukter', 'Olika typer av frukter'),
+-- ('Djur', 'Olika typer av djur');
+
+
+
+-- SELECT * FROM Produkt;
+-- SELECT * FROM ProduktAttribut;
+--SELECT * FROM Kategori;
+
+
+
+
+
+
+
+-- INSERT INTO Produkt (artikelnummer, namn, pris, lagerantal, vikt, kategori_id, beskrivning) VALUES
+-- ('FRUKT001', 'Äpple', 10.00, 100, 0.2, 1, 'Ett rött äpple'),
+-- ('FRUKT002', 'Banan', 5.00, 200, 0.15, 1, 'En gul banan'),
+-- ('FRUKT003', 'Apelsin', 8.00, 150, 0.25, 1, 'En saftig apelsin'),
+-- ('FRUKT004', 'Druvor', 12.00, 80, 0.1, 1, 'En klase druvor'),
+-- ('FRUKT005', 'Päron', 7.00, 120, 0.3, 1, 'Ett saftigt päron'),
+-- ('FRUKT006', 'Mango', 15.00, 60, 0.4, 1, 'En söt mango'),
+-- ('FRUKT007', 'Kiwi', 9.00, 90, 0.2, 1, 'En grön kiwi'),
+-- ('FRUKT008', 'Jordgubbar', 20.00, 50, 0.05, 1, 'Färska jordgubbar'),
+-- ('FRUKT009', 'Blåbär', 18.00, 70, 0.02, 1, 'Färska blåbär'),
+-- ('FRUKT010', 'Hallon', 22.00, 40, 0.03, 1, 'Färska hallon'),
+-- ('FRUKT011', 'Ananas', 25.00, 30, 1.0, 1, 'En söt ananas'),
+-- ('FRUKT012', 'Papaya', 30.00, 20, 0.5, 1, 'En exotisk papaya'),
+-- ('FRUKT013', 'Körsbär', 35.00, 10, 0.02, 1, 'Färska körsbär'),
+-- ('FRUKT014', 'Persika', 28.00, 15, 0.3, 1, 'En saftig persika'),
+-- ('FRUKT015', 'Plommon', 32.00, 12, 0.25, 1, 'Ett sött plommon'),
+-- ('FRUKT016', 'Citron', 6.00, 110, 0.2, 1, 'En syrlig citron'),
+-- ('FRUKT017', 'Lime', 7.00, 130, 0.15, 1, 'En grön lime'),
+-- ('FRUKT018', 'Grapefrukt', 12.00, 80, 0.4, 1, 'En bitter grapefrukt'),
+-- ('FRUKT019', 'Klementin', 14.00, 70, 0.1, 1, 'En söt klementin'),
+-- ('FRUKT020', 'Mango', 15.00, 60, 0.4, 1, 'En söt mango'),
+-- ('FRUKT021', 'Passionsfrukt', 40.00, 20, 0.1, 1, 'En exotisk passionsfrukt'),
+-- ('FRUKT022', 'Granatäpple', 50.00, 10, 0.5, 1, 'Ett vackert granatäpple'),
+-- ('FRUKT023', 'Fikon', 45.00, 15, 0.3, 1, 'Ett sött fikon'),
+-- ('FRUKT024', 'Kokosnöt', 60.00, 5, 1.0, 1, 'En hård kokosnöt'),
+-- ('FRUKT025', 'Druvor', 12.00, 80, 0.1, 1, 'En klase druvor'),
+-- ('FRUKT026', 'Avokado', 20.00, 50, 0.2, 1, 'En krämig avokado'),
+-- ('FRUKT027', 'Nektarin', 30.00, 40, 0.3, 1, 'En söt nektarin'),
+-- ('FRUKT028', 'Myrtenträd', 35.00, 30, 0.4, 1, 'Ett vackert myrtenträd'),
+-- ('FRUKT029', 'Kiwifrukt', 25.00, 20, 0.2, 1, 'En söt kiwifrukt'),
+-- ('FRUKT030', 'Papaya', 30.00, 10, 0.5, 1, 'En exotisk papaya'),
+-- ('DJUR001', 'Hund', 5000.00, 10, 20.0, 2, 'En söt hund'),
+-- ('DJUR002', 'Katt', 3000.00, 15, 10.0, 2, 'En fluffig katt'),
+-- ('DJUR003', 'Fågel', 1500.00, 20, 1.0, 2, 'En färgglad fågel'),
+-- ('DJUR004', 'Kaniner', 2000.00, 25, 2.0, 2, 'Söta kaniner'),
+-- ('DJUR005', 'Hamster', 800.00, 30, 0.5, 2, 'En liten hamster'),
+-- ('DJUR006', 'Sköldpadda', 1200.00, 12, 3.0, 2, 'En långsam sköldpadda'),
+-- ('DJUR007', 'Fiskar', 500.00, 50, 0.1, 2, 'Färgglada fiskar i akvariet'),
+-- ('DJUR008', 'Kanin', 2500.00, 18, 1.5, 2, 'En söt kanin'),
+-- ('DJUR009', 'Marsvin', 1800.00, 22, 1.8, 2, 'Ett gulligt marsvin'),
+-- ('DJUR010', 'Papegoja', 3500.00, 8, 1.2, 2, 'En pratglad papegoja'),
+-- ('DJUR011', 'Sköldpadda', 1200.00, 12, 3.0, 2, 'En långsam sköldpadda'),
+-- ('DJUR012', 'Iguana', 4000.00, 5, 2.5, 2, 'En grön iguana'),
+-- ('DJUR013', 'Kameleont', 4500.00, 4, 1.8, 2, 'En färgglad kameleont'),
+-- ('DJUR014', 'Råtta', 600.00, 35, 0.3, 2, 'En snabb råtta'),
+-- ('DJUR015', 'Ekorre', 700.00, 28, 0.4, 2, 'En söt ekorre'),
+-- ('DJUR016', 'Uggla', 2500.00, 10, 1.5, 2, 'En vis uggla'),
+-- ('DJUR017', 'Kattunge', 2000.00, 15, 0.8, 2, 'En lekfull kattunge'),
+-- ('DJUR018', 'Valp', 3000.00, 12, 1.0, 2, 'En gullig valp'),
+-- ('DJUR019', 'Skunk', 900.00, 20, 1.5, 2, 'En söt skunk'),
+-- ('DJUR020', 'Fjäril', 1000.00, 50, 0.01, 2, 'En vacker fjäril'),
+-- ('DJUR021', 'Krokodil', 8000.00, 3, 50.0, 2, 'En stor krokodil'),
+-- ('DJUR022', 'Ormar', 2000.00, 8, 5.0, 2, 'En lång orm'),
+-- ('DJUR023', 'Sköldpadda', 1200.00, 12, 3.0, 2, 'En långsam sköldpadda'),
+-- ('DJUR024', 'Falk', 3000.00, 6, 1.5, 2, 'En snabb falk'),
+-- ('DJUR025', 'Papegoja', 3500.00, 4, 1.2, 2, 'En pratglad papegoja'),
+-- ('DJUR026', 'Katt', 3000.00, 15, 10.0, 2, 'En fluffig katt'),
+-- ('DJUR027', 'Hund', 5000.00, 10, 20.0, 2, 'En söt hund'),
+-- ('DJUR028', 'Fågel', 1500.00, 20, 1.0, 2, 'En färgglad fågel'),
+-- ('DJUR029', 'Kaniner', 2000.00, 25, 2.0, 2, 'Söta kaniner'),
+-- ('DJUR030', 'Hamster', 800.00, 30, 0.5, 2, 'En liten hamster');
+
+
+DO $$ 
+DECLARE 
+    i INT := 31;  -- Starta från 31 eftersom du har redan produkter från 1 till 30
+BEGIN
+    -- För frukter (produkter 31 till 50 000)
+    FOR i IN 31..50000 LOOP
+        INSERT INTO produkt (artikelnummer, namn, pris, lagerantal, vikt, kategori_id, beskrivning)
+        VALUES (
+            'FRUKT' || LPAD(i::text, 5, '0'),  -- Justera LPAD för att skapa unika artikelnummer, från FRUKT00031 till FRUKT50000
+            CASE 
+                WHEN (i % 5 = 0) THEN 'Banan'
+                WHEN (i % 5 = 1) THEN 'Äpple'
+                WHEN (i % 5 = 2) THEN 'Apelsin'
+                WHEN (i % 5 = 3) THEN 'Päron'
+                ELSE 'Mango'
+            END, 
+            ROUND((5 + (RANDOM() * 20))::numeric, 2),  -- Pris mellan 5 och 25
+            ROUND((50 + (RANDOM() * 150))::numeric, 0), -- Lagerantal mellan 50 och 200
+            ROUND((0.1 + (RANDOM() * 0.5))::numeric, 2), -- Vikt mellan 0.1 och 0.6
+            1,  -- Kategori 1 (Frukter)
+            'Beskrivning för produkt ' || i
+        );
+    END LOOP;
+
+    -- För djur (produkter 50 001 till 100 000)
+    FOR i IN 50001..100000 LOOP
+        INSERT INTO produkt (artikelnummer, namn, pris, lagerantal, vikt, kategori_id, beskrivning)
+        VALUES (
+            'DJUR' || LPAD(i::text, 5, '0'),  -- Justera LPAD för att skapa unika artikelnummer, från DJUR050001 till DJUR100000
+            CASE 
+                WHEN (i % 5 = 0) THEN 'Hund'
+                WHEN (i % 5 = 1) THEN 'Katt'
+                WHEN (i % 5 = 2) THEN 'Fågel'
+                WHEN (i % 5 = 3) THEN 'Kaniner'
+                ELSE 'Sköldpadda'
+            END, 
+            ROUND((500 + (RANDOM() * 4500))::numeric, 2),  -- Pris mellan 500 och 5000
+            ROUND((10 + (RANDOM() * 50))::numeric, 0), -- Lagerantal mellan 10 och 60
+            ROUND((0.1 + (RANDOM() * 5))::numeric, 2), -- Vikt mellan 0.1 och 5
+            2,  -- Kategori 2 (Djur)
+            'Beskrivning för produkt ' || i
+        );
+    END LOOP;
+END $$;
