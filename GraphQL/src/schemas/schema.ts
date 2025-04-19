@@ -1,53 +1,38 @@
-import { GraphQLObjectType, GraphQLSchema, GraphQLList, GraphQLString, GraphQLID, GraphQLFloat, GraphQLInt } from 'graphql';
-import db from '../config/db';
+import { buildSchema } from 'graphql';
 import resolvers from '../resolvers/resolver';
 
+const schema = buildSchema(`
+  type Produkt {
+    id: ID!
+    artikelnummer: String!
+    namn: String!
+    pris: Float!
+    lagerantal: Int!
+    vikt: Float!
+    kategori_id: Int!
+    beskrivning: String!
+  }
 
+  input ProduktInput {
+    artikelnummer: String!
+    namn: String!
+    pris: Float!
+    lagerantal: Int!
+    vikt: Float!
+    kategori_id: Int!
+    beskrivning: String!
+  }
 
-const KategoriType = new GraphQLObjectType({
-  name: 'Kategori',
-  fields: () => ({
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    beskrivning: { type: GraphQLString },
-    skapad: { type: GraphQLFloat },
-    uppdaterad: { type: GraphQLFloat }
-  })
-});
+  type Query {
+    getProducts: [Produkt]
+    getProduct(id: ID!): Produkt
+  }
 
-const ProduktType = new GraphQLObjectType({
-  name: 'Produkt',
-  fields: () => ({
-    id: { type: GraphQLID },
-    artikelnummer: { type: GraphQLString },
-    namn: { type: GraphQLString },
-    pris: { type: GraphQLFloat },
-    lagerantal: { type: GraphQLInt },
-    vikt: { type: GraphQLFloat },
-    kategoriID: { type: GraphQLID },
-    beskrivning: { type: GraphQLString }
-  })
-});
+  type Mutation {
+    postProduct(input: ProduktInput): Produkt
+    putProduct(id: ID!, input: ProduktInput): Produkt
+    deleteProduct(id: ID!): String
+  }
+`);
 
-
-const RootQuery = new GraphQLObjectType({
-  name: 'RootQueryType',
-  fields: {
-    getKategorier: {
-      type: new GraphQLList(KategoriType),
-      resolve: async () => {
-        return await db('kategori').select('*');
-      },
-    },
-    getProducts: {
-      type: new GraphQLList(ProduktType),
-      resolve: async () => {
-        return await db('produkt').select('*');
-      },
-    },
-  },
-});
-
-export default new GraphQLSchema({
-  query: RootQuery,
-});
+export default schema;
