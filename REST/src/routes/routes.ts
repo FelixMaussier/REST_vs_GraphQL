@@ -6,22 +6,17 @@ import db from '../config/db';
 
 //#region GET
 api.get('/products', async (req, res) => {
-    //const limit = parseInt(req.query.limit as string) || 10;
-    try {
-        //const products = await db('produkt').select('*').limit(limit);
-        const products = await db('produkt').select('*');
-        res.json(products);
-    } catch (err) {
-        console.error("DB error:", err);
-        res.status(500).json({ error: "Failed to fetch products" });
-    }
+  const limit = parseInt(req.query.limit as string) || 10;
+  const products = await db('produkt').select('*').limit(limit);
+  res.json({ data: products });
 });
 
 api.get('/products/:id', async (req, res) => {
-    const { id } = req.params;
-    const product = await db('produkt').where({ id }).first();
-    console.log(product, " produkt");
-    res.json(product);
+  const { id } = req.params;
+  //const limit = parseInt(req.query.limit as string) || 10;
+  const products = await db('produkt').where({ id }).first();
+
+  res.json({ data: products})
 });
 //#endregion
 
@@ -82,7 +77,7 @@ api.put('/products', async (req, res) => {
 //#endregion
 
 //#region DELETE
-api.delete('/products/:id', async (req: Request, res: Response) => {
+api.delete('/products/:id', async (req, res) => {
     const { id } = req.params;
     const deletedCount = await db('produkt').where({ id }).del();
     res.json({ message: `Product with ID ${id} deleted.` });

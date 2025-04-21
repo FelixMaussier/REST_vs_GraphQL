@@ -1,8 +1,16 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
-import { useIsMobile } from "@/hooks/use-mobile"
+import * as React from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Card,
   CardAction,
@@ -10,53 +18,64 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group"
+} from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export type PerformanceDataPoint = {
-  timestamp: number
-  REST: number | null
-  GraphQL: number | null
-}
+  timestamp: number;
+  REST: number | null;
+  GraphQL: number | null;
+};
 
-export function ChartAreaInteractive({ data }: { data: PerformanceDataPoint[] }) {
-  const isMobile = useIsMobile()
+export function ChartAreaInteractive({
+  data,
+}: {
+  data: PerformanceDataPoint[];
+}) {
+  const isMobile = useIsMobile();
 
   const formattedData = React.useMemo(() => {
     const now = Date.now();
     // Visa data från senaste timmen
-    const cutoff = now - (60 * 60 * 1000);
+    const cutoff = now - 60 * 60 * 1000;
 
     return data
-      .filter(item => item.timestamp >= cutoff)
-      .map(item => ({
+      .filter((item) => item.timestamp >= cutoff)
+      .map((item) => ({
         label: new Date(item.timestamp).toLocaleTimeString(),
         timestamp: item.timestamp,
         REST: item.REST,
-        GraphQL: item.GraphQL
+        GraphQL: item.GraphQL,
       }))
       .sort((a, b) => a.timestamp - b.timestamp);
   }, [data]);
 
   const averageTimes = React.useMemo(() => {
-    const restTimes = formattedData.map(d => d.REST).filter(Boolean) as number[]
-    const graphqlTimes = formattedData.map(d => d.GraphQL).filter(Boolean) as number[]
+    const restTimes = formattedData
+      .map((d) => d.REST)
+      .filter(Boolean) as number[];
+    const graphqlTimes = formattedData
+      .map((d) => d.GraphQL)
+      .filter(Boolean) as number[];
 
     return {
-      REST: restTimes.length ? Math.round(restTimes.reduce((a, b) => a + b, 0) / restTimes.length) : 0,
-      GraphQL: graphqlTimes.length ? Math.round(graphqlTimes.reduce((a, b) => a + b, 0) / graphqlTimes.length) : 0
-    }
-  }, [formattedData])
+      REST: restTimes.length
+        ? Math.round(restTimes.reduce((a, b) => a + b, 0) / restTimes.length)
+        : 0,
+      GraphQL: graphqlTimes.length
+        ? Math.round(
+            graphqlTimes.reduce((a, b) => a + b, 0) / graphqlTimes.length
+          )
+        : 0,
+    };
+  }, [formattedData]);
 
   return (
     <Card className="@container/card mb-6">
@@ -102,7 +121,7 @@ export function ChartAreaInteractive({ data }: { data: PerformanceDataPoint[] })
                 minTickGap={20}
               />
               <YAxis
-                domain={[0, 'dataMax + 100']}
+                domain={[0, "dataMax + 100"]}
                 tick={{ fontSize: 12 }}
                 tickFormatter={(value) => `${value}ms`}
               />
@@ -113,7 +132,10 @@ export function ChartAreaInteractive({ data }: { data: PerformanceDataPoint[] })
                       <div className="bg-background p-4 border rounded-lg shadow-lg">
                         <p className="font-medium">{label}</p>
                         {payload.map((entry, index) => (
-                          <div key={`tooltip-${index}`} className="flex items-center">
+                          <div
+                            key={`tooltip-${index}`}
+                            className="flex items-center"
+                          >
                             <div
                               className="w-3 h-3 rounded-full mr-2"
                               style={{ backgroundColor: entry.color }}
@@ -123,9 +145,9 @@ export function ChartAreaInteractive({ data }: { data: PerformanceDataPoint[] })
                           </div>
                         ))}
                       </div>
-                    )
+                    );
                   }
-                  return null
+                  return null;
                 }}
               />
               <Area
@@ -149,5 +171,5 @@ export function ChartAreaInteractive({ data }: { data: PerformanceDataPoint[] })
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

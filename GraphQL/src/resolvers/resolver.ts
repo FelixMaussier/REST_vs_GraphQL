@@ -1,9 +1,9 @@
 import db from '../config/db';
 
 const resolvers = {
-        getProducts: async () => {
+        getProducts: async ({ limit }: any) => {
             try {
-              const products = await db('produkt').select('*');
+              const products = await db('produkt').select('*').limit(limit);
               return products;
             } catch (error) {
               console.error("error: " , error);

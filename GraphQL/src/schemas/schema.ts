@@ -24,7 +24,7 @@ const schema = buildSchema(`
   }
 
   type Query {
-    getProducts: [Produkt]
+    getProducts(limit: Int): [Produkt]
     getProduct(id: ID!): Produkt
   }
 
