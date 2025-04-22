@@ -6,7 +6,7 @@ async function generateData() {
     console.log('🚀 Startar datagenerering...');
     console.log('Ansluter till databas:', process.env.DB_NAME);
 
-    // Ta bort gammal data (om du vill börja om helt)
+    // Ta bort gammal data
     await db('produktattribut').del();
     await db('produkt').del();
     await db('kategori').del();
