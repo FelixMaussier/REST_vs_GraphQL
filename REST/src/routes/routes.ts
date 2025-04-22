@@ -42,6 +42,7 @@ api.post('/products', async (req, res) => {
         beskrivning
       }).returning('*');
       console.log(nyProdukt , " skapdes")
+      res.status(201).json({ message: "Produkten skapades.", produkt: nyProdukt });
   });
 
 //#endregion

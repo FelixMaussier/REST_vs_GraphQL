@@ -113,47 +113,49 @@
 -- ('DJUR030', 'Hamster', 800.00, 30, 0.5, 2, 'En liten hamster');
 
 
-DO $$ 
-DECLARE 
-    i INT := 31;  -- Starta från 31 eftersom du har redan produkter från 1 till 30
-BEGIN
-    -- För frukter (produkter 31 till 50 000)
-    FOR i IN 31..50000 LOOP
-        INSERT INTO produkt (artikelnummer, namn, pris, lagerantal, vikt, kategori_id, beskrivning)
-        VALUES (
-            'FRUKT' || LPAD(i::text, 5, '0'),  -- Justera LPAD för att skapa unika artikelnummer, från FRUKT00031 till FRUKT50000
-            CASE 
-                WHEN (i % 5 = 0) THEN 'Banan'
-                WHEN (i % 5 = 1) THEN 'Äpple'
-                WHEN (i % 5 = 2) THEN 'Apelsin'
-                WHEN (i % 5 = 3) THEN 'Päron'
-                ELSE 'Mango'
-            END, 
-            ROUND((5 + (RANDOM() * 20))::numeric, 2),  -- Pris mellan 5 och 25
-            ROUND((50 + (RANDOM() * 150))::numeric, 0), -- Lagerantal mellan 50 och 200
-            ROUND((0.1 + (RANDOM() * 0.5))::numeric, 2), -- Vikt mellan 0.1 och 0.6
-            1,  -- Kategori 1 (Frukter)
-            'Beskrivning för produkt ' || i
-        );
-    END LOOP;
+-- DO $$ 
+-- DECLARE 
+--     i INT := 31;  -- Starta från 31 eftersom du har redan produkter från 1 till 30
+-- BEGIN
+--     -- För frukter (produkter 31 till 50 000)
+--     FOR i IN 31..50000 LOOP
+--         INSERT INTO produkt (artikelnummer, namn, pris, lagerantal, vikt, kategori_id, beskrivning)
+--         VALUES (
+--             'FRUKT' || LPAD(i::text, 5, '0'),  -- Justera LPAD för att skapa unika artikelnummer, från FRUKT00031 till FRUKT50000
+--             CASE 
+--                 WHEN (i % 5 = 0) THEN 'Banan'
+--                 WHEN (i % 5 = 1) THEN 'Äpple'
+--                 WHEN (i % 5 = 2) THEN 'Apelsin'
+--                 WHEN (i % 5 = 3) THEN 'Päron'
+--                 ELSE 'Mango'
+--             END, 
+--             ROUND((5 + (RANDOM() * 20))::numeric, 2),  -- Pris mellan 5 och 25
+--             ROUND((50 + (RANDOM() * 150))::numeric, 0), -- Lagerantal mellan 50 och 200
+--             ROUND((0.1 + (RANDOM() * 0.5))::numeric, 2), -- Vikt mellan 0.1 och 0.6
+--             1,  -- Kategori 1 (Frukter)
+--             'Beskrivning för produkt ' || i
+--         );
+--     END LOOP;
 
-    -- För djur (produkter 50 001 till 100 000)
-    FOR i IN 50001..100000 LOOP
-        INSERT INTO produkt (artikelnummer, namn, pris, lagerantal, vikt, kategori_id, beskrivning)
-        VALUES (
-            'DJUR' || LPAD(i::text, 5, '0'),  -- Justera LPAD för att skapa unika artikelnummer, från DJUR050001 till DJUR100000
-            CASE 
-                WHEN (i % 5 = 0) THEN 'Hund'
-                WHEN (i % 5 = 1) THEN 'Katt'
-                WHEN (i % 5 = 2) THEN 'Fågel'
-                WHEN (i % 5 = 3) THEN 'Kaniner'
-                ELSE 'Sköldpadda'
-            END, 
-            ROUND((500 + (RANDOM() * 4500))::numeric, 2),  -- Pris mellan 500 och 5000
-            ROUND((10 + (RANDOM() * 50))::numeric, 0), -- Lagerantal mellan 10 och 60
-            ROUND((0.1 + (RANDOM() * 5))::numeric, 2), -- Vikt mellan 0.1 och 5
-            2,  -- Kategori 2 (Djur)
-            'Beskrivning för produkt ' || i
-        );
-    END LOOP;
-END $$;
+--     -- För djur (produkter 50 001 till 100 000)
+--     FOR i IN 50001..100000 LOOP
+--         INSERT INTO produkt (artikelnummer, namn, pris, lagerantal, vikt, kategori_id, beskrivning)
+--         VALUES (
+--             'DJUR' || LPAD(i::text, 5, '0'),  -- Justera LPAD för att skapa unika artikelnummer, från DJUR050001 till DJUR100000
+--             CASE 
+--                 WHEN (i % 5 = 0) THEN 'Hund'
+--                 WHEN (i % 5 = 1) THEN 'Katt'
+--                 WHEN (i % 5 = 2) THEN 'Fågel'
+--                 WHEN (i % 5 = 3) THEN 'Kaniner'
+--                 ELSE 'Sköldpadda'
+--             END, 
+--             ROUND((500 + (RANDOM() * 4500))::numeric, 2),  -- Pris mellan 500 och 5000
+--             ROUND((10 + (RANDOM() * 50))::numeric, 0), -- Lagerantal mellan 10 och 60
+--             ROUND((0.1 + (RANDOM() * 5))::numeric, 2), -- Vikt mellan 0.1 och 5
+--             2,  -- Kategori 2 (Djur)
+--             'Beskrivning för produkt ' || i
+--         );
+--     END LOOP;
+-- END $$;
+
+SELECT * FROM produkt;

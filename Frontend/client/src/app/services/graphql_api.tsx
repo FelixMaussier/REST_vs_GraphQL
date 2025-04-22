@@ -31,11 +31,12 @@ export const graphGetProducts = async (
             `,
         }),
       });
-
       const data = await response.json();
       return data;
     },
-    numOfUsers
+    numOfReq,
+    numOfUsers,
+    "query: getProducts"
   );
 };
 

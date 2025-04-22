@@ -9,6 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(morgan('dev'));
 
+/*
 app.use((req, res, next) => {
     const startCPU = process.cpuUsage();
     const startMem = process.memoryUsage().heapUsed;
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
     next();
   });
 
+  */
 app.use('/', routes);
 
 export default app;

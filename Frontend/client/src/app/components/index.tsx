@@ -1,7 +1,5 @@
-import FetchProductsButton from "@/app/components/FetchProductsButton";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +9,6 @@ import {
   putProducts,
   deleteProducts,
 } from "../services/rest_api";
-
 import {
   graphGetProducts,
   graphGetProductsById,
@@ -20,11 +17,13 @@ import {
   graphDeleteProduct,
 } from "@/app/services/graphql_api";
 import SvarTiderGraf from "./graphs/ResponseGraph";
-import SvarTiderData from "../types/RestDataType";
+import SvarTiderData, { metricsData } from "../types/RestDataType";
 import { SiteHeader } from "@/components/site-header";
 import { Card } from "@/components/ui/card";
 import { CardHeader } from "@/components/ui/card";
 import { CardDescription } from "@/components/ui/card";
+import MetricsTable from "./resultTable";
+import { set } from "zod";
 
 const Index = () => {
   const [restPrestandaData, setRestPrestandaData] = useState<SvarTiderData>({});
@@ -32,20 +31,25 @@ const Index = () => {
   const [numOfUsers, setNumOfUsers] = useState<number>(10);
   const [ID, setID] = useState<number>(1);
 
+  const [metricData, setMetricData] = useState<metricsData | undefined>(
+    undefined
+  );
+
   //#region REST API
   const rest_Products = async () => {
-    const result = await getProducts(numOfReq, numOfUsers);
-    console.log("index, fetchProducts: ", result);
+    const { results, metrics } = await getProducts(numOfReq, numOfUsers);
+    setMetricData(metrics);
   };
 
   const rest_ProductsID = async () => {
-    const result = await getProductsID(ID);
-    console.log("index, fetchProductsID: ", result);
+    const { results, metrics } = await getProductsID(ID, numOfUsers);
+    setMetricData(metrics);
   };
 
   const rest_PostProducts = async () => {
-    const result = await postProducts();
-    console.log("index, postData: ", result);
+    const { results, metrics } = await postProducts(numOfUsers);
+    console.log("post metricData::::   ", metrics);
+    setMetricData(metrics);
   };
 
   const rest_PutProducts = async () => {
@@ -62,8 +66,8 @@ const Index = () => {
 
   //#region GraphQL API
   const graph_GetProducts = async () => {
-    const result = await graphGetProducts(numOfReq, numOfUsers);
-    console.log("index, graph_GetProducts: ", result);
+    const { results, metrics } = await graphGetProducts(numOfReq, numOfUsers);
+    setMetricData(metrics);
   };
 
   const graph_GetProductsById = async () => {
@@ -159,16 +163,21 @@ const Index = () => {
                 </Card>
               </div>
               <div className="px-4 lg:px-6">
-                <SvarTiderGraf
-                  rest_avg={restPrestandaData.rest_avg}
-                  cpu_time={restPrestandaData.cpu_time}
-                  memory_diff={restPrestandaData.memory_diff}
-                  number_of_req={restPrestandaData.number_of_req}
-                  number_of_user={restPrestandaData.number_of_user}
-                  data={restPrestandaData.data}
-                />
+                {metricData ? (
+                  <MetricsTable
+                    api={metricData.api}
+                    averageResponseTime={metricData.avaregeResponseTime}
+                    method={metricData.method}
+                    numOfReq={metricData.numOfReq}
+                    numOfUsers={metricData.numOfUsers}
+                    requestsPer10ms={metricData.requestsPer10ms}
+                    throughput={metricData.throughput}
+                    totalTime={metricData.totalTime}
+                  />
+                ) : (
+                  <p>Loading metrics data...</p>
+                )}
               </div>
-              datatable
             </div>
           </div>
         </div>

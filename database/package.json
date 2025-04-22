@@ -1,0 +1,21 @@
+{
+  "name": "database",
+  "version": "1.0.0",
+  "main": "dataGeneration.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-db": "node config/db.js",
+    "seed-data": "node dataGeneration.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@faker-js/faker": "^9.7.0",
+    "dotenv": "^16.5.0",
+    "faker": "^5.5.3",
+    "knex": "^3.1.0",
+    "pg": "^8.14.1"
+  }
+}

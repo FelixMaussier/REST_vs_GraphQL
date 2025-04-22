@@ -12,43 +12,56 @@ export const getProducts = async (numOfReq: number, numOfUsers: number) => {
       const data = await response.json();
       return data;
     },
-    numOfUsers
+    numOfReq,
+    numOfUsers,
+    "GET"
   );
 };
 
-export const getProductsID = async (ID = 1) => {
-  const response = await fetch(base_url + "/products/" + ID);
-  const data = await response.json();
-  //   console.log("Svarstid (ms):", data.rest_avg);
-  //   console.log("CPU-tid (µs):", data.cpu_time);
-  //   console.log("Minnesdiff (MB):", data.memory_diff);
-  //   console.log("Antal requests:", data.number_of_req);
-  //   console.log("Antal användare:", data.number_of_user);
-  //   console.log("Produkter:", data.data);
-  return data;
+export const getProductsID = async (ID = 1, numOfUsers: number) => {
+  return await measureTime(
+    "REST /products/:id",
+    async () => {
+      const response = await fetch(base_url + "/products/" + ID);
+      const data = await response.json();
+      return data;
+    },
+    1,
+    numOfUsers,
+    "GET"
+  );
 };
 //#endregion
 
 //#region POST
-export const postProducts = async () => {
-  const body = {
-    artikelnummer: "FRUKT" + Math.floor(Math.random() * 999999),
-    namn: "Hallon",
-    pris: "12.00",
-    lagerantal: 80,
-    vikt: "10.99",
-    kategori_id: 1,
-    beskrivning: "En Hallom bär",
-  };
-  const response = await fetch(base_url + "/products/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+export const postProducts = async (numOfUsers: number) => {
+  return await measureTime(
+    "REST /products",
+    async () => {
+      const body = {
+        artikelnummer: "FRUKT" + Math.floor(Math.random() * 99999999),
+        namn: "Hallon",
+        pris: "12.00",
+        lagerantal: 80,
+        vikt: "10.99",
+        kategori_id: 1,
+        beskrivning: "En Hallom bär",
+      };
+      console.log("post rest_api");
+      const response = await fetch(base_url + "/products/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await response.json();
+      return data;
     },
-    body: JSON.stringify(body),
-  });
-  const data = await response.json();
-  return data;
+    1,
+    numOfUsers,
+    "POST"
+  );
 };
 
 //#endregion

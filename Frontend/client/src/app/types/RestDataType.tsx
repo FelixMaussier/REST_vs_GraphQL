@@ -8,3 +8,14 @@ interface SvarTiderData {
   data?: Product[];
 }
 export default SvarTiderData;
+
+export interface metricsData {
+  api?: string; // REST eller GraphQL
+  method?: string; // GET, POST, PUT, DELETE
+  numOfReq?: number; // Antal requests
+  numOfUsers?: number; // Antal användare
+  totalTime?: number; // Total tid i ms
+  throughput?: number; // Genomströmning i req/s
+  avaregeResponseTime?: number; // Genomsnittlig svarstid i ms
+  requestsPer10ms?: number[]; // Antal requests per 10ms
+}
