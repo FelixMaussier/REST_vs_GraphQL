@@ -18,6 +18,18 @@ api.get('/products/:id', async (req, res) => {
 
   res.json({ data: products})
 });
+
+api.get('/categories', async (req, res) => {
+  const limit = parseInt(req.query.limit as string) || 10;
+  const categories = await db('kategori').select('*').limit(limit);
+  res.json({ data: categories });
+});
+
+api.get('/category/:id', async (req, res) => {
+  const { id } = req.params;
+  const categories = await db('kategori').where({ id }).first();
+  res.json({ data: categories });
+});
 //#endregion
 
 //#region POST

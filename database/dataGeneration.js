@@ -1,12 +1,15 @@
 const db = require('./config/db');
 const { faker } = require('@faker-js/faker');
 
+const TOTAL_PRODUCTS = 150000;
+const BATCH_SIZE = 1000;
+
 async function generateData() {
   try {
     console.log('🚀 Startar datagenerering...');
     console.log('Ansluter till databas:', process.env.DB_NAME);
 
-    // Ta bort gammal data
+    // Rensa gammal data
     await db('produktattribut').del();
     await db('produkt').del();
     await db('kategori').del();
@@ -22,32 +25,37 @@ async function generateData() {
         .returning('id');
       kategoriIds.push(kategori.id || kategori);
     }
-
     console.log(`✅ Skapade ${kategoriIds.length} kategorier!`);
 
-    // Skapa 500 produkter
-    const produktData = [];
-    for (let i = 0; i < 500; i++) {
-      produktData.push({
-        artikelnummer: faker.string.uuid(),
-        namn: faker.commerce.productName(),
-        pris: faker.commerce.price({ min: 10, max: 1000 }),
-        lagerantal: faker.number.int({ min: 0, max: 100 }),
-        vikt: faker.number.float({ min: 0.1, max: 5, precision: 0.01 }),
-        kategori_id: faker.helpers.arrayElement(kategoriIds),
-        beskrivning: faker.commerce.productDescription(),
-      });
+    const insertedProdukts = [];
+
+    // Skapa produkter i batchar
+    for (let i = 0; i < TOTAL_PRODUCTS; i += BATCH_SIZE) {
+      const produktBatch = [];
+
+      for (let j = 0; j < BATCH_SIZE && (i + j) < TOTAL_PRODUCTS; j++) {
+        produktBatch.push({
+          artikelnummer: faker.string.uuid(),
+          namn: faker.commerce.productName(),
+          pris: faker.commerce.price({ min: 10, max: 1000 }),
+          lagerantal: faker.number.int({ min: 0, max: 100 }),
+          vikt: faker.number.float({ min: 0.1, max: 5, precision: 0.01 }),
+          kategori_id: faker.helpers.arrayElement(kategoriIds),
+          beskrivning: faker.commerce.productDescription(),
+        });
+      }
+
+      const inserted = await db('produkt').insert(produktBatch).returning('id');
+      insertedProdukts.push(...inserted);
+      console.log(`✅ Batch ${Math.floor(i / BATCH_SIZE) + 1} skapad med ${inserted.length} produkter`);
     }
 
-    const insertedProdukts = await db('produkt').insert(produktData).returning('id');
-    console.log(`✅ Skapade ${insertedProdukts.length} produkter!`);
+    // Skapa attribut för varje produkt i batchar
+    const attributBatch = [];
+    for (let i = 0; i < insertedProdukts.length; i++) {
+      const produktId = insertedProdukts[i].id || insertedProdukts[i];
 
-    // Skapa attribut
-    const produktAttributData = [];
-    for (const produkt of insertedProdukts) {
-      const produktId = produkt.id || produkt;
-
-      produktAttributData.push(
+      attributBatch.push(
         {
           produkt_id: produktId,
           attribut_namn: 'Färg',
@@ -74,10 +82,14 @@ async function generateData() {
           attribut_varde: faker.company.name(),
         }
       );
-    }
 
-    await db('produktattribut').insert(produktAttributData);
-    console.log(`✅ Skapade attribut för ${insertedProdukts.length} produkter!`);
+      // Skriv till databasen i batchar om 5 000 attribut (1000 produkter * 5 attribut)
+      if (attributBatch.length >= 5000 || i === insertedProdukts.length - 1) {
+        await db('produktattribut').insert(attributBatch);
+        console.log(`✅ Skapade attribut för ${attributBatch.length / 5} produkter`);
+        attributBatch.length = 0; // Töm batchen
+      }
+    }
 
     console.log('🎉 Allt klart!');
   } catch (err) {

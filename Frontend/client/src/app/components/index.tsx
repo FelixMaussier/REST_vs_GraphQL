@@ -12,6 +12,7 @@ import {
 import {
   graphGetProducts,
   graphGetProductsById,
+  graphGetCategories,
   graphPostProduct,
   graphPutProduct,
   graphDeleteProduct,
@@ -75,8 +76,13 @@ const Index = () => {
     console.log("index, graph_GetProductsById: ", result);
   };
 
+  const graph_GetCategories = async () => {
+    const result = await graphGetCategories(numOfReq);
+    console.log("index, graph_GetCategories: ", result);
+  };
+
   const graph_PostProduct = async () => {
-    const result = await graphPostProduct();
+    const result = await graphPostProduct(numOfReq);
     console.log("index, graph_PostProduct: ", result);
   };
 
@@ -149,6 +155,9 @@ const Index = () => {
                     </Button>
                     <Button onClick={() => graph_GetProductsById()}>
                       getProduct
+                    </Button>
+                    <Button onClick={() => graph_GetCategories()}>
+                      getCategories
                     </Button>
                     <Button onClick={() => graph_PostProduct()}>
                       postProduct

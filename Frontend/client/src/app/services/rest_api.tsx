@@ -31,6 +31,36 @@ export const getProductsID = async (ID = 1, numOfUsers: number) => {
     "GET"
   );
 };
+
+//NOT IMPLEMENTED
+export const getCategories = async (numOfReq: number, numOfUsers: number) => {
+  return await measureTime(
+    "REST /categories",
+    async () => {
+      const response = await fetch(`${base_url}/categories?limit=${numOfReq}`);
+      const data = await response.json();
+      return data;
+    },
+    numOfReq,
+    numOfUsers,
+    "GET"
+  );
+};
+
+//NOT IMPLEMENTED
+export const getCategoriesID = async (ID = 1, numOfUsers: number) => {
+  return await measureTime(
+    "REST /categories/:id",
+    async () => {
+      const response = await fetch(base_url + "/categories/" + ID);
+      const data = await response.json();
+      return data;
+    },
+    1,
+    numOfUsers,
+    "GET"
+  );
+};
 //#endregion
 
 //#region POST
