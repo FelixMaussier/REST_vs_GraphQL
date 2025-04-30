@@ -11,9 +11,6 @@
 --     FOREIGN KEY (kategori_id) REFERENCES Kategori(id)
 -- );
 
-
-
-
 --PRODUCKT ATTRIBUT TABLE
 -- CREATE TABLE ProduktAttribut (
 --     id SERIAL PRIMARY KEY,
@@ -43,12 +40,6 @@
 -- SELECT * FROM Produkt;
 -- SELECT * FROM ProduktAttribut;
 --SELECT * FROM Kategori;
-
-
-
-
-
-
 
 -- INSERT INTO Produkt (artikelnummer, namn, pris, lagerantal, vikt, kategori_id, beskrivning) VALUES
 -- ('FRUKT001', 'Äpple', 10.00, 100, 0.2, 1, 'Ett rött äpple'),

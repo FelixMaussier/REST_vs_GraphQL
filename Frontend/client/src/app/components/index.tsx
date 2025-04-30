@@ -43,19 +43,20 @@ const Index = () => {
   };
 
   const rest_ProductsID = async () => {
-    const { results, metrics } = await getProductsID(ID, numOfUsers);
+    const { results, metrics } = await getProductsID(numOfUsers, numOfReq);
     setMetricData(metrics);
   };
 
   const rest_PostProducts = async () => {
-    const { results, metrics } = await postProducts(numOfUsers);
+    const { results, metrics } = await postProducts(numOfUsers, numOfReq);
     console.log("post metricData::::   ", metrics);
     setMetricData(metrics);
   };
 
   const rest_PutProducts = async () => {
-    const result = await putProducts(ID);
-    console.log("index, putData", result);
+    const { results, metrics } = await putProducts(numOfUsers, numOfReq);
+
+    setMetricData(metrics);
   };
 
   const rest_DeleteProducts = async () => {
@@ -72,7 +73,7 @@ const Index = () => {
   };
 
   const graph_GetProductsById = async () => {
-    const result = await graphGetProductsById(ID);
+    const result = await graphGetProductsById(numOfUsers, numOfReq);
     console.log("index, graph_GetProductsById: ", result);
   };
 
@@ -82,12 +83,13 @@ const Index = () => {
   };
 
   const graph_PostProduct = async () => {
-    const result = await graphPostProduct(numOfReq);
-    console.log("index, graph_PostProduct: ", result);
+    const { results, metrics } = await graphPostProduct(numOfUsers, numOfReq);
+    console.log("metidcData::::   ", metrics);
+    setMetricData(metrics);
   };
 
   const graph_PutProduct = async () => {
-    const result = await graphPutProduct(ID);
+    const result = await graphPutProduct(numOfUsers, numOfReq);
     console.log("index, graph_PutProduct: ", result);
   };
 

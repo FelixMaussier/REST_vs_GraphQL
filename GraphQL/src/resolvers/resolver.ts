@@ -29,65 +29,53 @@ const resolvers = {
 //#endregion
 //#region  MUTATION
 postProduct: async ({ input }: any) => {
-  try {
-    console.log("Input artikelnummer:", input.artikelnummer);  // Logga artikelnummer
+  const [newProduct] = await db('produkt')
+    .insert({
+      artikelnummer: input.artikelnummer,
+      namn: input.namn,
+      pris: input.pris,
+      lagerantal: input.lagerantal,
+      vikt: input.vikt,
+      kategori_id: input.kategori_id,
+      beskrivning: input.beskrivning
+    })
+    .returning('*');
 
-    // Kontrollera om artikelnumret redan finns i databasen
-    const existingProduct = await db('produkt')
-      .where({ artikelnummer: input.artikelnummer })
-      .first();  // Hämta den första matchande posten
+  console.log("newProduct: ", newProduct);
 
-    if (existingProduct) {
-      throw new Error(`Produkt med artikelnummer ${input.artikelnummer} finns redan.`);
-    }
+  const productAttributes = (input.attribut || []).map((attr: any) => ({
+    produkt_id: newProduct.id,
+    attribut_namn: attr.namn,
+    attribut_varde: attr.varde
+  }));
 
-    const [newProduct] = await db('produkt')
-      .insert({
-        artikelnummer: input.artikelnummer,
-        namn: input.namn,
-        pris: input.pris,
-        lagerantal: input.lagerantal,
-        vikt: input.vikt,
-        kategori_id: input.kategori_id,
-        beskrivning: input.beskrivning
-      })
-      .returning('*');  // Returnera den nyinlagda produkten
-
-      console.log("newProduct: ",newProduct);  // Logga hela resultatet
-    if (!newProduct) {
-      throw new Error('Misslyckades att skapa produkt. Ingen data returnerades.');
-    }
-
-    const productAttributes = (input.attribut || []).map((attr: any) => ({
-      produkt_id: newProduct.id, 
-      attribut_namn: attr.namn,
-      attribut_varde: attr.varde
-    }));
-
-    if (productAttributes.length > 0) {
-      await db('produktattribut').insert(productAttributes);
-    }
-    
-    const attributes = await db('produktattribut')
-      .where({ produkt_id: newProduct.id });
-    
-    return newProduct;
-  } catch (error) {
-    console.error('Fel vid skapande av produkt:', error);
-    throw new Error('Kunde inte skapa produkt');
+  if (productAttributes.length > 0) {
+    await db('produktattribut').insert(productAttributes);
   }
+  
+  const attributes = await db('produktattribut')
+    .where({ produkt_id: newProduct.id });
+
+  return {
+    artikelnummer: newProduct.artikelnummer,
+    namn: newProduct.namn,
+    pris: newProduct.pris,
+    lagerantal: newProduct.lagerantal,
+    vikt: newProduct.vikt,
+    kategori_id: newProduct.kategori_id,
+    beskrivning: newProduct.beskrivning,
+    id: newProduct.id
+  };
 },
-        putProduct: async ({ id, input }: any) => {
-            const [updatedProduct] = await db('produkt')
-              .where({ id })
-              .update(input)
-              .returning('*');
-            return updatedProduct;
-        },
-        deleteProduct: async ({ id }: { id: number }) => {
+putProduct: async ({ id, input }: { id: number; input: any }) => {
+  console.log("id: ", id);
+  console.log("input: ", input);
+  
+},
+deleteProduct: async ({ id }: { id: number }) => {
             await db('produkt').where({ id }).del();
             return `Produkt med ID ${id} raderades.`;
-        },
+},
 
   //#endregion
 

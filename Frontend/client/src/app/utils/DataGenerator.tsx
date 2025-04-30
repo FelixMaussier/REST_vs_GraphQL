@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker";
-import { Category } from "../types/category"; // Importera Category-typen
+import { Category } from "../types/category";
+import { Kategori } from "../types/DatabaseTypes";
+import { Produkt } from "../types/DatabaseTypes";
+import { ProduktAttribut } from "../types/DatabaseTypes";
 
 type Product = {
   artikelnummer: string;
@@ -7,87 +10,52 @@ type Product = {
   pris: number;
   lagerantal: number;
   vikt: number;
-  kategoriID: number;
+  kategori_id: number;
   beskrivning: string;
 };
 
-export const generateGraphPostProduct = async (
-  numOfReq: number
-): Promise<Product[]> => {
-  const { categories, existingArtikelnr } =
-    await fetchCategoriesAndArtikelnummer(numOfReq);
+export const generateProductData = (numOfReq: number): Product[] => {
+  const generatedProducts: Product[] = [];
 
-  if (!categories || categories.length === 0) {
-    throw new Error("Inga kategorier hittades.");
-  }
+  for (let i = 0; i < numOfReq; i++) {
+    const artikelnummer = faker.string.uuid();
+    const randomCategory = { id: Math.floor(Math.random() * 50) + 1 };
 
-  const data: Product[] = [];
-  const maxTries = numOfReq * 10;
-  let tries = 0;
-
-  while (data.length < numOfReq && tries < maxTries) {
-    tries++;
-
-    const artikelnummer = faker.string.uuid(); // Generera ett unikt artikelnummer
-
-    // Kontrollera om artikelnumret redan finns i de genererade produkterna eller existerande artikelnummer
-    if (
-      existingArtikelnr.includes(artikelnummer) ||
-      data.some((d) => d.artikelnummer === artikelnummer)
-    ) {
-      console.log(`Dublett hittad, försöker generera nytt artikelnummer...`);
-      continue; // Skippar denna iteration om det är en dublett
-    }
-
-    const randomCategory = faker.helpers.arrayElement(categories);
-
-    if (!randomCategory) {
-      throw new Error("Kategori hittades inte.");
-    }
-
-    // Lägg till produkten i data-arrayen
-    data.push({
-      artikelnummer, // Använd det genererade artikelnumret
+    generatedProducts.push({
+      artikelnummer,
       namn: faker.commerce.productName(),
       pris: parseFloat(faker.commerce.price({ min: 10, max: 1000 })),
       lagerantal: faker.number.int({ min: 0, max: 1000 }),
       vikt: parseFloat(faker.number.float({ min: 0.1, max: 5 }).toFixed(2)),
-      kategoriID: randomCategory.id, // Använd ID från den slumpmässigt valda kategorin
+      kategori_id: randomCategory.id,
       beskrivning: faker.commerce.productDescription(),
     });
   }
-
-  if (data.length < numOfReq) {
-    throw new Error("Kunde inte generera tillräckligt många unika produkter.");
-  }
-
-  // Returnera endast de nygenererade produkterna
-  return data;
+  return generatedProducts;
 };
 
-const fetchCategoriesAndArtikelnummer = async (numOfReq: number) => {
-  const response = await fetch("http://localhost:3001/graphql", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: `
-        query {
-          getCategories(limit: ${numOfReq}) {
-            id
-            namn
-          }
-          getProducts {
-            artikelnummer
-          }
-        }
-      `,
-    }),
+export const generateUpdatedProductData = (
+  productIds: number[],
+  categorieIds: number[]
+): Produkt[] => {
+  const updatedProducts: Produkt[] = [];
+
+  productIds.forEach((productId, index) => {
+    const kategoriId = categorieIds[index % categorieIds.length]; // Välj kategoriID baserat på index
+
+    // Generera uppdaterad produktdata
+    const updatedProduct: Produkt = {
+      id: productId, // ID ska inte uppdateras
+      artikelnummer: faker.string.uuid(), // Behåll unik artikelnummer för produkten
+      namn: `Updated Product ${index + 1}`, // Exempel på att uppdatera namn
+      pris: faker.number.float({ min: 50, max: 500 }), // Slumpmässigt pris mellan 50 och 500
+      lagerantal: faker.number.int({ min: 1, max: 500 }), // Slumpmässigt lagerantal
+      vikt: parseFloat(faker.number.float({ min: 0.1, max: 10 }).toFixed(2)), // Slumpmässig vikt mellan 0.1 och 10
+      kategori_id: kategoriId, // Uppdaterad kategori ID
+      beskrivning: `Updated description for product ${index + 1}`, // Exempelbeskrivning
+    };
+    updatedProducts.push(updatedProduct);
   });
 
-  const data = await response.json();
-  console.log(data, "data");
-  return {
-    categories: data.data.getCategories as Category[],
-    existingArtikelnr: data.data.getProducts.map((p: any) => p.artikelnummer),
-  };
+  return updatedProducts;
 };

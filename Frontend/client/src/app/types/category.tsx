@@ -5,3 +5,9 @@ export interface Category {
   skapad_datum: string;
   uppdaterad_datum: string;
 }
+
+export interface Kategori {
+  id: number;
+  namn: string;
+  beskrivning: string;
+}

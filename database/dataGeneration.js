@@ -6,7 +6,7 @@ const BATCH_SIZE = 1000;
 
 async function generateData() {
   try {
-    console.log('🚀 Startar datagenerering...');
+    console.log('🚀 Startar datagenerering');
     console.log('Ansluter till databas:', process.env.DB_NAME);
 
     // Rensa gammal data

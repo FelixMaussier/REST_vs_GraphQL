@@ -1,15 +1,24 @@
 import { metricsData } from "../types/RestDataType";
 
-// Hjälpfunktion för att räkna antal requests per 10ms-intervall
 function calculateRequestsPer10ms(
   timestamps: number[],
   startTime: number
 ): number[] {
-  const bins: number[] = [];
+  if (timestamps.length === 0) return [];
+
+  // Beräkna max antal intervall baserat på sista anropet
+  const lastTime = Math.max(...timestamps);
+  const totalIntervals = Math.floor((lastTime - startTime) / 10 + 1);
+
+  // Skapa en array fylld med nollor
+  const bins: number[] = new Array(totalIntervals).fill(0);
+
+  // Uppdatera räknaren för varje timestamp
   for (const time of timestamps) {
     const index = Math.floor((time - startTime) / 10);
-    bins[index] = (bins[index] || 0) + 1;
+    bins[index]++;
   }
+
   return bins;
 }
 
@@ -29,7 +38,7 @@ export const measureTime = async <T,>(
   let requestCount = 0;
   const results: T[] = [];
   const requestLogs: string[] = [];
-  const requestEndTimes: number[] = []; // För att lagra tidpunkter då varje request slutförs
+  const requestEndTimes: number[] = [];
 
   const promises = Array.from({ length: numOfReq }).map(async (_, i) => {
     const reqStart = performance.now();
@@ -40,7 +49,7 @@ export const measureTime = async <T,>(
     results[i] = result;
     requestCount++;
 
-    requestEndTimes.push(reqEnd); // Spara slutet av varje request
+    requestEndTimes.push(reqEnd);
 
     const logMessage = `[${label}] Request #${i + 1}: ${duration.toFixed(
       2
@@ -67,19 +76,6 @@ export const measureTime = async <T,>(
     avaregeResponseTime: Number(responseTime.toFixed(2)),
     requestsPer10ms: requestsPer10ms,
   };
-
-  /*
-  console.log(`\n--- [${label}] Performance Summary ---`);
-  console.log(`Total requests sent       : ${metrics.numOfReq}`);
-  console.log(`Total users               : ${metrics.numOfUsers}`);
-  console.log(`Total test time           : ${metrics.totalTime} ms`);
-  console.log(`Avg response time/request : ${metrics.avaregeResponseTime} ms`);
-  console.log(`Throughput                : ${metrics.throughput} req/s`);
-  console.log(
-    `Requests per 10ms         : ${metrics.requestsPer10ms.join(", ")}`
-  );
-  console.log(`--- End of [${label}] ---\n`);
-*/
 
   return { results, metrics, requestLogs };
 };

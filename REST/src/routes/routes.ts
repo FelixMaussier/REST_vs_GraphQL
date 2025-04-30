@@ -30,6 +30,30 @@ api.get('/category/:id', async (req, res) => {
   const categories = await db('kategori').where({ id }).first();
   res.json({ data: categories });
 });
+
+
+api.get('/getRandomID', async (req, res) => {
+  try {  
+    const limit = parseInt(req.query.limit as string) || 10;
+    const productIds = await db('produkt').select('id').orderByRaw('RANDOM()').limit(limit);                      
+    res.json(productIds.map(product => product.id));  
+
+  } catch (error) {
+    console.error("Error fetching product IDs:", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
+api.get('/getRandomCategoryID', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const categoryIds = await db('kategori').select('id').orderByRaw('RANDOM()').limit(limit);
+    res.json(categoryIds.map(category => category.id));
+  } catch (error) {
+    console.error("Error fetching category IDs:", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
 //#endregion
 
 //#region POST

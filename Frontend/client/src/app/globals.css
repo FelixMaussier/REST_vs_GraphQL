@@ -17,12 +17,6 @@ body {
   text-align: center;
 }
 
-.card-container {}
-
-.cardREST {}
-
-.cardGraphQL {}
-
 header {
   flex-shrink: 0;
 }
