@@ -1,16 +1,13 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  getProducts,
-  getProductsID,
   postProducts,
   putProducts,
   deleteProducts,
 } from "../services/rest_api";
 import {
-  graphGetProducts,
   graphGetProductsById,
   graphGetCategories,
   graphPostProduct,
@@ -24,13 +21,23 @@ import { Card } from "@/components/ui/card";
 import { CardHeader } from "@/components/ui/card";
 import { CardDescription } from "@/components/ui/card";
 import MetricsTable from "./resultTable";
+import { usePerformance } from "@/hooks/usePerfomance";
+import {
+  graphGetProducts,
+  graphGetProductsByID,
+  graphGetProducts_3,
+} from "@/app/utils/graphQLTester";
+import {
+  getProducts,
+  getProductsID,
+  getProducts_3_tables,
+} from "../utils/restTester";
 import { set } from "zod";
 
 const Index = () => {
   const [restPrestandaData, setRestPrestandaData] = useState<SvarTiderData>({});
   const [numOfReq, setNumOfReq] = useState<number>(10);
-  const [numOfUsers, setNumOfUsers] = useState<number>(10);
-  const [ID, setID] = useState<number>(1);
+  const [iterations, setIterations] = useState<number>(1);
 
   const [metricData, setMetricData] = useState<metricsData | undefined>(
     undefined
@@ -38,43 +45,58 @@ const Index = () => {
 
   //#region REST API
   const rest_Products = async () => {
-    const { results, metrics } = await getProducts(numOfReq, numOfUsers);
-    setMetricData(metrics);
+    const results = await getProducts(numOfReq, iterations);
+    console.log("index, rest_Products: ", results);
   };
 
+  const rest_Products_3 = async () => {
+    const results = await getProducts_3_tables(numOfReq, iterations);
+    console.log("index, rest_products_3: ", results);
+  };
   const rest_ProductsID = async () => {
-    const { results, metrics } = await getProductsID(numOfUsers, numOfReq);
-    setMetricData(metrics);
+    // const { results, metrics } = await getProductsID(numOfReq);
+    // setMetricData(metrics);
+    const results = await getProductsID(numOfReq);
+    console.log("index, rest_ProductsID: ", results);
   };
 
   const rest_PostProducts = async () => {
-    const { results, metrics } = await postProducts(numOfUsers, numOfReq);
-    console.log("post metricData::::   ", metrics);
-    setMetricData(metrics);
+    //const { results, metrics } = await postProducts();
+    //console.log("post metricData::::   ", metrics);
+    //setMetricData(metrics);
   };
 
   const rest_PutProducts = async () => {
-    const { results, metrics } = await putProducts(numOfUsers, numOfReq);
-
-    setMetricData(metrics);
+    //const { results, metrics } = await putProducts();
+    //setMetricData(metrics);
   };
 
   const rest_DeleteProducts = async () => {
-    const result = await deleteProducts(ID);
+    const result = await deleteProducts();
     console.log("index, deleteData", result);
   };
 
   //#endregion
 
   //#region GraphQL API
-  const graph_GetProducts = async () => {
-    const { results, metrics } = await graphGetProducts(numOfReq, numOfUsers);
-    setMetricData(metrics);
+
+  const graph_getProducts = async () => {
+    const results = await graphGetProducts(iterations, numOfReq);
+    console.log("iterations: ", iterations);
+    console.log("numOfReq: ", numOfReq);
+    console.log("index, graph_getProducts: ", results);
+
+    const { responseTime, cpuArr, ramArr } = results;
+  };
+
+  const graph_GetProducts_3 = async () => {
+    const results = await graphGetProducts_3(numOfReq, iterations);
+    console.log("index, graph_3", results);
   };
 
   const graph_GetProductsById = async () => {
-    const result = await graphGetProductsById(numOfUsers, numOfReq);
-    console.log("index, graph_GetProductsById: ", result);
+    const results = await graphGetProductsByID(numOfReq);
+    console.log("results: ", results);
   };
 
   const graph_GetCategories = async () => {
@@ -83,18 +105,19 @@ const Index = () => {
   };
 
   const graph_PostProduct = async () => {
-    const { results, metrics } = await graphPostProduct(numOfUsers, numOfReq);
+    const { results, metrics } = await graphPostProduct(numOfReq);
     console.log("metidcData::::   ", metrics);
     setMetricData(metrics);
   };
 
   const graph_PutProduct = async () => {
-    const result = await graphPutProduct(numOfUsers, numOfReq);
-    console.log("index, graph_PutProduct: ", result);
+    const { results, metrics } = await graphPutProduct(numOfReq);
+    console.log("index, graph_PutProduct: ", results);
+    setMetricData(metrics);
   };
 
   const graph_DeleteProduct = async () => {
-    const result = await graphDeleteProduct(ID);
+    const result = await graphDeleteProduct();
     console.log("index, graph_DeleteProduct: ", result);
   };
   //#endregion
@@ -115,17 +138,11 @@ const Index = () => {
                       value={numOfReq}
                       onChange={(e) => setNumOfReq(Number(e.target.value))}
                     />
-                    <CardDescription>ID</CardDescription>
+                    <CardDescription>Number of Iterations</CardDescription>
                     <Input
                       type="number"
-                      value={ID}
-                      onChange={(e) => setID(Number(e.target.value))}
-                    />
-                    <CardDescription>Number of Users</CardDescription>
-                    <Input
-                      type="number"
-                      value={numOfUsers}
-                      onChange={(e) => setNumOfUsers(Number(e.target.value))}
+                      value={iterations}
+                      onChange={(e) => setIterations(Number(e.target.value))}
                     />
                   </CardHeader>
                 </Card>
@@ -134,6 +151,9 @@ const Index = () => {
                     <CardDescription>REST Endpoints</CardDescription>
                     <Button onClick={() => rest_Products()}>
                       GET /products
+                    </Button>
+                    <Button onClick={() => rest_Products_3()}>
+                      GET /products_3
                     </Button>
                     <Button onClick={() => rest_ProductsID()}>
                       GET /products/:id
@@ -152,15 +172,18 @@ const Index = () => {
                 <Card className="@container/card">
                   <CardHeader className="relative">
                     <CardDescription>GraphQL Queries</CardDescription>
-                    <Button onClick={() => graph_GetProducts()}>
+                    <Button onClick={() => graph_getProducts()}>
                       getProducts
+                    </Button>
+                    <Button onClick={() => graph_GetProducts_3()}>
+                      getProducts (3 table)
                     </Button>
                     <Button onClick={() => graph_GetProductsById()}>
                       getProduct
                     </Button>
-                    <Button onClick={() => graph_GetCategories()}>
+                    {/* <Button onClick={() => graph_GetCategories()}>
                       getCategories
-                    </Button>
+                    </Button> */}
                     <Button onClick={() => graph_PostProduct()}>
                       postProduct
                     </Button>

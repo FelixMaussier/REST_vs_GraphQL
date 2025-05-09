@@ -26,7 +26,6 @@ export const measureTime = async <T,>(
   label: string,
   func: () => Promise<T>,
   numOfReq: number = 1,
-  numOfUsers: number = 1,
   method: string
 ): Promise<{
   results: T[];
@@ -70,7 +69,6 @@ export const measureTime = async <T,>(
     api: label.split(" ")[0],
     method: method,
     numOfReq: numOfReq,
-    numOfUsers: numOfUsers,
     totalTime: Number(totalTime.toFixed(2)),
     throughput: Number(throughput.toFixed(2)),
     avaregeResponseTime: Number(responseTime.toFixed(2)),

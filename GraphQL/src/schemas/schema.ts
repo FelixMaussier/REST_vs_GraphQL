@@ -9,20 +9,23 @@ type Produkt {
   pris: Float!
   lagerantal: Int!
   vikt: Float!
-  kategori_id: Int!
-  beskrivning: String!
-  produktAttribut: [ProduktAttribut!]!
+  kategori: Kategori
+  beskrivning: String
+  attributer: [ProduktAttribut!]!
 }
 
 type Kategori {
   id: ID!
   namn: String!
-  beskrivning: String!
-  skadad_datum: String!
+  beskrivning: String
+  produkter: [Produkt!]!
+  skapad_datum: String!
   uppdaterad_datum: String!
 }
 
 type ProduktAttribut {
+  id: ID!
+  produkt: Produkt!
   attribut_namn: String!
   attribut_varde: String!
 }
@@ -31,34 +34,23 @@ input ProduktInput {
   artikelnummer: String!
   namn: String!
   pris: Float!
-  lagerantal: Int!
-  vikt: Float!
-  kategori_id: Int!
-  beskrivning: String!
-  attribut: [ProduktAttributInput!]!
-}
-
-input ProduktAttributInput {
-  namn: String!
-  varde: String!
-}
-
-input KategoriInput {
-  namn: String!
-  beskrivning: String!
+  kategori_id: Int
+  beskrivning: String
 }
 
 type Query {
-  getProducts(limit: Int): [Produkt]
+  getProducts(limit: Int): [Produkt!]!
+  getProducts_3(limit: Int): [Produkt!]!
   getProduct(id: ID!): Produkt
+  getRandomProductID(limit: Int!): [ID!]!
   getCategories(limit: Int): [Kategori]
   getCategory(id: ID!): Kategori
 }
 
 type Mutation {
-  postProduct(input: ProduktInput!): Produkt!
-  putProduct(id: Int!, input: ProduktInput!): Produkt!
-  deleteProduct(id: ID!): String
+  postProduct(id: ID!): [Produkt!]!
+  putProduct(id: ID!, input: ProduktInput!): Produkt! 
+  deleteProduct(id: ID!): [Produkt!]!
 }
 `);
 

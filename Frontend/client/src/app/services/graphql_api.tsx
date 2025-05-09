@@ -10,9 +10,10 @@ import {
   generateProductData,
   generateUpdatedProductData,
 } from "../utils/DataGenerator";
+import { usePerformance } from "@/hooks/usePerfomance";
 //#region testCode
 //#endregion
-
+/*
 export const graphGetProducts = async (
   numOfReq: number,
   numOfUsers: number
@@ -44,9 +45,33 @@ export const graphGetProducts = async (
       return data;
     },
     numOfReq,
-    numOfUsers,
     "query: getProducts"
   );
+};
+
+*/
+export const graphGetProducts = async (numOfReq: number) => {
+  console.log("numOfReq:", numOfReq);
+  const query = `
+    query {
+      getProducts(limit: ${numOfReq}) {
+        artikelnummer
+        beskrivning
+        id
+        kategori_id
+        lagerantal
+        namn
+        pris
+        vikt
+        } 
+      }
+    }
+  `;
+  const metrict = usePerformance("http://localhost:3001", query);
+
+  console.log("Latency:", metrict[0]);
+  console.log("Throughput:", metrict[1]);
+  console.log("Error:", metrict[2]);
 };
 
 export const graphGetProductsById = async (
@@ -88,7 +113,6 @@ export const graphGetProductsById = async (
       return responses;
     },
     numOfReq,
-    numOfUsers,
     "POST"
   );
 };
@@ -116,15 +140,11 @@ export const graphGetCategories = async (numOfReq: number) => {
       return data;
     },
     numOfReq,
-    1,
     "query: getCategories"
   );
 };
 
-export const graphPostProduct = async (
-  numOfUsers: number,
-  numOfReq: number
-) => {
+export const graphPostProduct = async (numOfReq: number) => {
   const products = generateProductData(numOfReq);
   console.log("numOfReq:", numOfReq);
   console.log("Antal genererade produkter:", products.length);
@@ -174,12 +194,11 @@ export const graphPostProduct = async (
     "GraphQL POST /products",
     createSingleProduct,
     numOfReq,
-    numOfUsers,
     "POST"
   );
 };
 
-export const graphPutProduct = async (numOfUsers: number, numOfReq: number) => {
+export const graphPutProduct = async (numOfReq: number) => {
   const productIds = await fetchGraphQLProductIds(numOfReq);
   const categoryIDs = await fetchGraphQLCategoryIds(numOfReq);
   const productData = generateUpdatedProductData(productIds, categoryIDs);
@@ -188,60 +207,61 @@ export const graphPutProduct = async (numOfUsers: number, numOfReq: number) => {
   console.log("categoryIDs", categoryIDs);
   console.log("productData", productData);
 
-  const testProdukt = productData[0];
+  const { results, metrics, requestLogs } = await measureTime(
+    "GraphQL PUT /products",
+    async () => {
+      const updateRequests = productData.map(async (product) => {
+        try {
+          const response = await fetch("http://localhost:3001/graphql", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              query: `
+                mutation putProduct($id: ID!, $input: ProduktInput!) {
+                  putProduct(id: $id, input: $input) {
+                    artikelnummer
+                    namn
+                    pris
+                    lagerantal
+                    vikt
+                    kategori_id
+                    beskrivning
+                  }
+                }
+              `,
+              variables: {
+                id: Number(product.id),
+                input: {
+                  artikelnummer: product.artikelnummer,
+                  namn: product.namn,
+                  pris: Number(product.pris),
+                  lagerantal: Number(product.lagerantal),
+                  vikt: Number(product.vikt),
+                  kategori_id: Number(product.kategori_id),
+                  beskrivning: product.beskrivning,
+                },
+              },
+            }),
+          });
 
-  const mutation = `
-    mutation UpdateProduct($id: Int!, $input: ProduktInput!) {
-      putProduct(id: $id, input: $input) {
-        artikelnummer
-        namn
-        pris
-        lagerantal
-        vikt
-        kategori_id
-        beskrivning
-        produktAttribut {
-          attribut_namn
-          attribut_varde
+          const data = await response.json();
+          console.log(`Updated product ${product.id}`, data);
+          return data;
+        } catch (error) {
+          console.error(`Error updating product ${product.id}:`, error);
+          return null;
         }
-      }
-    }
-  `;
+      });
 
-  const variables = {
-    id: Number(testProdukt.id),
-    input: {
-      artikelnummer: testProdukt.artikelnummer,
-      namn: testProdukt.namn,
-      pris: Number(testProdukt.pris),
-      lagerantal: Number(testProdukt.lagerantal),
-      vikt: testProdukt.vikt,
-      kategori_id: Number(testProdukt.kategori_id),
-      beskrivning: testProdukt.beskrivning,
-      attribut: [
-        {
-          namn: "default", // Required field for ProduktAttributInput
-          varde: "default", // Required field for ProduktAttributInput
-        },
-      ],
+      await Promise.all(updateRequests);
     },
-  };
+    numOfReq,
 
-  const response = await fetch("http://localhost:3001/graphql", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: mutation,
-      variables: variables,
-    }),
-  });
+    "PUT"
+  );
 
-  const result = await response.json();
-  if (result.errors) {
-    console.error("❌ GraphQL error:", result.errors);
-  } else {
-    console.log("✅ Produkt uppdaterad:", result.data.putProduct);
-  }
+  console.log("Metrics data:", metrics);
+  return { results, metrics };
 };
 
 export const graphDeleteProduct = async (ID = -1) => {

@@ -1,3 +1,5 @@
+import { da } from "@faker-js/faker";
+
 const rest_url = "http://localhost:3002";
 const graph_url = "http://localhost:3001/graphql";
 
@@ -7,6 +9,7 @@ export const fetchRestProductIds = async (
 ): Promise<number[]> => {
   const response = await fetch(`${rest_url}/getRandomID?limit=${numOfReq}`);
   const data = await response.json();
+
   return data;
 };
 
@@ -32,16 +35,14 @@ export const fetchGraphQLProductIds = async (
     body: JSON.stringify({
       query: `
           query {
-            getProducts(limit: ${numOfReq}) {
-              id
-            }
+            getRandomProductID(limit: ${numOfReq})
           }
         `,
     }),
   });
 
   const data = await response.json();
-  return data.data.getProducts.map((product: any) => product.id);
+  return data.data.getRandomProductID;
 };
 
 export const fetchGraphQLCategoryIds = async (

@@ -5,11 +5,54 @@ const api = express.Router();
 import db from '../config/db';
 
 //#region GET
+
+
 api.get('/products', async (req, res) => {
-  const limit = parseInt(req.query.limit as string) || 10;
-  const products = await db('produkt').select('*').limit(limit);
-  res.json({ data: products });
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const products = await db('produkt').select('*').limit(limit);
+    res.json({ data: products });
+  } catch (err) {
+    console.error('Error in /products:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
+
+api.get('/products_3', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    // Hämta produkter med kategori-info (se till att inkludera id)
+    const products = await db('produkt')
+      .select(
+        'produkt.id',
+        'produkt.namn as produkt_namn',
+        'produkt.pris',
+        'kategori.namn as kategori_namn'
+      )
+      .leftJoin('kategori', 'produkt.kategori_id', 'kategori.id')
+      .limit(limit);
+
+    const productsWithAttributes = await Promise.all(
+      products.map(async (product) => {
+        const attributes = await db('produktattribut')
+          .select('attribut_namn', 'attribut_varde')
+          .where('produkt_id', product.id);
+
+        return {
+          ...product,
+          attributes
+        };
+      })
+    );
+
+    console.log(productsWithAttributes);
+    res.json({ data: productsWithAttributes });
+} catch (err) {
+    console.error('Error fetching products:', err);
+    res.status(500).json({ error: 'Internal server error' });
+}
+})
 
 api.get('/products/:id', async (req, res) => {
   const { id } = req.params;

@@ -13,7 +13,10 @@ import { faker } from "@faker-js/faker";
 const base_url = "http://localhost:3002";
 
 //#region GET
-export const getProducts = async (numOfReq: number, numOfUsers: number) => {
+export const getProducts = async (numOfReq: number, iterations: number) => {
+  const res = await fetch(`${base_url}/products?limit=${numOfReq}`);
+  const data = await res.json();
+
   return await measureTime(
     "REST /products",
     async () => {
@@ -22,12 +25,11 @@ export const getProducts = async (numOfReq: number, numOfUsers: number) => {
       return data;
     },
     numOfReq,
-    numOfUsers,
     "GET"
   );
 };
 
-export const getProductsID = async (numOfUsers: number, numOfReq: number) => {
+export const getProductsID = async (numOfReq: number) => {
   const validIDs = await fetchRestProductIds(numOfReq);
   return await measureTime(
     "REST /products/:id",
@@ -42,13 +44,12 @@ export const getProductsID = async (numOfUsers: number, numOfReq: number) => {
       return responses;
     },
     numOfReq,
-    numOfUsers,
     "GET"
   );
 };
 
 //NOT IMPLEMENTED
-export const getCategories = async (numOfReq: number, numOfUsers: number) => {
+export const getproducts_3_tables = async (numOfReq: number) => {
   return await measureTime(
     "REST /categories",
     async () => {
@@ -57,13 +58,12 @@ export const getCategories = async (numOfReq: number, numOfUsers: number) => {
       return data;
     },
     numOfReq,
-    numOfUsers,
     "GET"
   );
 };
 
 //NOT IMPLEMENTED
-export const getCategoriesID = async (ID = 1, numOfUsers: number) => {
+export const getCategoriesID = async (ID = 1) => {
   return await measureTime(
     "REST /categories/:id",
     async () => {
@@ -72,14 +72,13 @@ export const getCategoriesID = async (ID = 1, numOfUsers: number) => {
       return data;
     },
     1,
-    numOfUsers,
     "GET"
   );
 };
 //#endregion
 
 //#region POST
-export const postProducts = async (numOfUsers: number, numOfReq: number) => {
+export const postProducts = async (numOfReq: number) => {
   const generatedProducts = generateProductData(numOfReq);
   console.log("numOfReq:", numOfReq);
   console.log("Antal genererade produkter:", generatedProducts.length);
@@ -102,7 +101,6 @@ export const postProducts = async (numOfUsers: number, numOfReq: number) => {
     "REST /products",
     createSingleProduct,
     numOfReq,
-    numOfUsers,
     "POST"
   );
 };
@@ -110,7 +108,7 @@ export const postProducts = async (numOfUsers: number, numOfReq: number) => {
 //#endregion
 
 //#region PUT
-export const putProducts = async (numOfUsers: number, numOfReq: number) => {
+export const putProducts = async (numOfReq: number) => {
   const productIds = await fetchRestProductIds(numOfReq);
   const categorieID = await fetchRestCategoryIds(numOfReq);
 
@@ -154,7 +152,6 @@ export const putProducts = async (numOfUsers: number, numOfReq: number) => {
         await Promise.all(updateRequests);
       },
       numOfReq,
-      numOfUsers,
       "PUT"
     );
 
