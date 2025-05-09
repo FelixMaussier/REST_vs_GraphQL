@@ -28,7 +28,9 @@ api.get('/products_3', async (req, res) => {
         'produkt.id',
         'produkt.namn as produkt_namn',
         'produkt.pris',
-        'kategori.namn as kategori_namn'
+        'produkt.artikelnummer',
+        'kategori.namn as kategori_namn',
+        'kategori.beskrivning as kategori_beskrivning'
       )
       .leftJoin('kategori', 'produkt.kategori_id', 'kategori.id')
       .limit(limit);
@@ -39,10 +41,17 @@ api.get('/products_3', async (req, res) => {
           .select('attribut_namn', 'attribut_varde')
           .where('produkt_id', product.id);
 
-        return {
-          ...product,
-          attributes
-        };
+          return {
+            id: product.id,
+            namn: product.produkt_namn,
+            pris: product.pris,
+            artikelnummer: product.artikelnummer,
+            kategori: {
+              namn: product.kategori_namn,
+              beskrivning: product.kategori_beskrivning
+            },
+            attributes
+          };
       })
     );
 

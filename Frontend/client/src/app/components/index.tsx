@@ -32,7 +32,7 @@ import {
   getProductsID,
   getProducts_3_tables,
 } from "../utils/restTester";
-import { set } from "zod";
+import ChartTest from "./Chart";
 
 const Index = () => {
   const [restPrestandaData, setRestPrestandaData] = useState<SvarTiderData>({});
@@ -43,9 +43,29 @@ const Index = () => {
     undefined
   );
 
+  const [restData, setRestData] = useState({
+    cpuArr: ["0"],
+    ramArr: ["0"],
+    responseTime: [0],
+    sizeInBytes: [0],
+  });
+
+  const [graphqlData, setGraphqlData] = useState({
+    cpuArr: [0],
+    ramArr: [0],
+    responseTime: [0],
+    sizeInBytes: [0],
+  });
+
   //#region REST API
   const rest_Products = async () => {
     const results = await getProducts(numOfReq, iterations);
+    setRestData({
+      responseTime: results.responseTime,
+      cpuArr: results.cpuArr.filter((val) => val !== null) as string[], // Filtrera bort null-värden
+      ramArr: results.ramArr.filter((val) => val !== null) as string[], // Filtrera bort null-värden
+      sizeInBytes: results.sizeInBytes,
+    });
     console.log("index, rest_Products: ", results);
   };
 
@@ -86,12 +106,22 @@ const Index = () => {
     console.log("numOfReq: ", numOfReq);
     console.log("index, graph_getProducts: ", results);
 
+    setGraphqlData({
+      responseTime: results.responseTime,
+      cpuArr: results.cpuArr
+        .filter((val) => val !== null)
+        .map((val) => parseFloat(val as string)),
+      ramArr: results.ramArr
+        .filter((val) => val !== null)
+        .map((val) => parseFloat(val as string)),
+      sizeInBytes: results.sizeInBytes,
+    });
     const { responseTime, cpuArr, ramArr } = results;
   };
 
   const graph_GetProducts_3 = async () => {
     const results = await graphGetProducts_3(numOfReq, iterations);
-    console.log("index, graph_3", results);
+    console.log("index, graph_graph_3", results);
   };
 
   const graph_GetProductsById = async () => {
@@ -212,6 +242,14 @@ const Index = () => {
                   <p>Loading metrics data...</p>
                 )}
               </div>
+              <ChartTest
+                restData={restData}
+                graphqlData={graphqlData}
+                iterations={iterations}
+                numOfReq={numOfReq}
+                title="REST API vs GraphQL Performance"
+                description="Comparison of performance metrics between REST and GraphQL"
+              />
             </div>
           </div>
         </div>

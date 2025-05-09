@@ -3,11 +3,6 @@ import { GraphQLClient } from 'graphql-request';
 
 const faker = require("@faker-js/faker");
 const endpoint = "http://localhost:3001/graphql";
-const graphQLClient = new GraphQLClient(endpoint, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-});
 
 
 export const getProducts = async (limit: number) => {
@@ -57,6 +52,7 @@ export const getProducts_3 = async (limit: number) => {
       artikelnummer
       kategori {
         namn
+        beskrivning
       }
       attributer {
         attribut_namn
@@ -79,7 +75,6 @@ export const getProducts_3 = async (limit: number) => {
 
   const data = await response.json();
 
-  console.log("data TESTSSS", data);
     return {
         data: data.data,
         cpu: response.headers.get("x-cpu"),
@@ -102,7 +97,10 @@ export const getProducts_3 = async (limit: number) => {
           artikelnummer
           beskrivning
           id
-          kategori
+          kategori{
+            namn
+            beskrivning
+          }
           lagerantal
           namn
           pris
