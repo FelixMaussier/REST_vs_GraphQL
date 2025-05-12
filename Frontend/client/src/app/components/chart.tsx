@@ -74,7 +74,7 @@ export default function APIComparisonChart({
       GraphQL: graphqlCpuUsage,
     },
     {
-      name: "RAM Usage (GB)",
+      name: "RAM Usage (MB)",
       REST: restRamUsage,
       GraphQL: graphqlRamUsage,
     },

@@ -38,6 +38,9 @@ const resolvers = {
         getProduct: async ({ id }: { id: number }) => {
           return await db('produkt').where({ id }).first();
         },
+        getProduct_2_fields: async ({ limit }: any) => {
+          return await db('produkt').select('namn', 'beskrivning').limit(limit)
+        },
         getRandomProductID: async ({limit}: any) => {
           return await db('produkt').pluck('id').orderByRaw('RANDOM()').limit(limit)
         },
@@ -50,8 +53,70 @@ const resolvers = {
 //#endregion
 //#region  MUTATION
 postProduct: async ({ input }: any) => {
+  try {
+    const newProduct = await db('produkt')
+      .insert({
+        artikelnummer: input.artikelnummer,
+        namn: input.namn,
+        pris: input.pris,
+        lagerantal: input.lagerantal,
+        vikt: input.vikt,
+        kategori_id: input.kategori_id,
+        beskrivning: input.beskrivning,
+      })
+      .returning('*');
 
-  console.log("helo");
+    return newProduct[0];
+  } catch (error: any) {
+    console.error("Database insert error: ", error);
+    throw new Error(`Insert failed: ${error.message}`);
+  }
+},
+
+postProduct_3: async ({ input }: any) => {
+
+  console.log("helo")
+  console.log(input);
+  return await db.transaction(async (trx) => {
+    const [newProduct] = await trx('produkt')
+      .insert({
+        artikelnummer: input.artikelnummer,
+        namn: input.namn,
+        pris: input.pris,
+        lagerantal: input.lagerantal,
+        vikt: input.vikt,
+        kategori_id: input.kategori_id,
+        beskrivning: input.beskrivning,
+      })
+      .returning('*'); 
+
+    if (input.produkt_attribut && input.produkt_attribut.length > 0) {
+      const attributToInsert = input.produkt_attribut.map((attr: any) => ({
+        produkt_id: newProduct.id,
+        attribut_namn: attr.attribut_namn,
+        attribut_varde: attr.attribut_varde,
+      }));
+
+      await trx('produktattribut').insert(attributToInsert);
+    }
+
+    const kategori = await trx('kategori')
+      .where({ id: newProduct.kategori_id })
+      .first();
+
+    const attributer = await trx('produktattribut')
+      .where({ produkt_id: newProduct.id });
+
+    return {
+      ...newProduct,
+      kategori,
+      attributer,
+    };
+  });
+},
+ 
+
+
   // const [newProduct] = await db('produkt')
   //   .insert({
   //     artikelnummer: input.artikelnummer,
@@ -89,7 +154,7 @@ postProduct: async ({ input }: any) => {
   //   beskrivning: newProduct.beskrivning,
   //   id: newProduct.id
   // };
-},
+
 putProduct: async ({ id, input }: { id: number; input: any }) => {
   return (await db('produkt')
     .where({ id })

@@ -106,6 +106,24 @@ api.get('/getRandomCategoryID', async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 });
+
+api.get('/getProducts_2_fields', async (req, res) => {
+  const limit = parseInt(req.query.limit as string) || 10;
+
+  try {
+    const allProducts = await db('produkt').select('*').limit(limit);
+
+    const filteredProducts = allProducts.map(product => ({
+      namn: product.namn,
+      beskrivning: product.beskrivning,
+    }));
+
+    res.json(filteredProducts);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 //#endregion
 
 //#region POST
@@ -131,6 +149,66 @@ api.post('/products', async (req, res) => {
       }).returning('*');
       console.log(nyProdukt , " skapdes")
       res.status(201).json({ message: "Produkten skapades.", produkt: nyProdukt });
+  });
+
+  api.post('/products_3', async (req, res) => {
+    try {
+      const {
+        artikelnummer,
+        namn,
+        pris,
+        lagerantal,
+        vikt,
+        beskrivning,
+        kategori_id,
+        produkt_attribut, // Här hämtar vi attributen
+      } = req.body;
+  
+      // Börja en databas-transaktion för att skapa produkten och attributen
+      const newProduct = await db.transaction(async (trx) => {
+        // Skapa en ny produkt i "produkt" tabellen
+        const [newProduct] = await trx('produkt')
+          .insert({
+            artikelnummer,
+            namn,
+            pris,
+            lagerantal,
+            vikt,
+            kategori_id,
+            beskrivning,
+          })
+          .returning('*');
+  
+        if (produkt_attribut && produkt_attribut.length > 0) {
+          const attributToInsert = produkt_attribut.map((attr: any) => ({
+            produkt_id: newProduct.id,
+            attribut_namn: attr.attribut_namn,
+            attribut_varde: attr.attribut_varde,
+          }));
+  
+          await trx('produktattribut').insert(attributToInsert);
+        }
+  
+        const kategori = await trx('kategori')
+          .where({ id: newProduct.kategori_id })
+          .first();
+  
+        const attributer = await trx('produktattribut')
+          .where({ produkt_id: newProduct.id });
+  
+        return {
+          ...newProduct,
+          kategori,
+          attributer,
+        };
+      });
+  
+      res.status(201).json(newProduct);
+  
+    } catch (error) {
+      console.error("Error inserting product: ", error);
+      res.status(500).json({ error: "Something went wrong!" });
+    }
   });
 
 //#endregion
