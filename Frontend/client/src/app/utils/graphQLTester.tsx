@@ -10,14 +10,11 @@ import {
 } from "@/lib/api/GraphQLQueries";
 import { fetchGraphQLProductIds } from "@/app/utils/GetIDFromDB";
 import { da, faker } from "@faker-js/faker";
-import { number } from "zod";
 
-var responseTime = [];
-var cpuArray = [];
-var ramArray = [];
-var sizeInBytes = [];
-
-export const graphGetProducts = async (iterations: number, limit: number) => {
+export const graphGetProducts = async (
+  iterations: number,
+  numOfReq: number
+) => {
   const responseTime = [];
   const ramArray = [];
   const cpuArray = [];
@@ -27,7 +24,7 @@ export const graphGetProducts = async (iterations: number, limit: number) => {
     const startTime = performance.now();
 
     try {
-      const data = await getProducts(limit);
+      const data = await getProducts(numOfReq);
       const totalTime = performance.now() - startTime;
 
       ramArray.push(data.ram);
@@ -39,6 +36,7 @@ export const graphGetProducts = async (iterations: number, limit: number) => {
       const size = Buffer.byteLength(responseBody, "utf8");
       const sizeInKB = size / 1024;
       sizeInBytes.push(sizeInKB);
+      await sleep(300);
     } catch (error) {
       console.error("Error during iteration:", error);
     }
@@ -52,20 +50,19 @@ export const graphGetProducts = async (iterations: number, limit: number) => {
 };
 
 export const graphGetProducts_3 = async (
-  numOfReq: number,
-  iterations: number
+  iterations: number,
+  numOfReq: number
 ) => {
-  const responseTime = [];
-  const ramArray = [];
-  const cpuArray = [];
-  const sizeInBytes = [];
+  var responseTime = [];
+  var ramArray = [];
+  var cpuArray = [];
+  var sizeInBytes = [];
 
   for (let i = 0; i < iterations; i++) {
     const startTime = performance.now();
 
     try {
       const data = await getProducts_3(numOfReq);
-      console.log("data:: ", data);
       const totalTime = performance.now() - startTime;
 
       ramArray.push(data.ram);
@@ -91,7 +88,10 @@ export const graphGetProducts_3 = async (
   };
 };
 
-export const graphGetProductsByID = async (numOfReq: number) => {
+export const graphGetProductsByID = async (
+  iterations: number,
+  numOfReq: number
+) => {
   const responseTime = [];
   const ramArray = [];
   const cpuArray = [];
@@ -117,6 +117,7 @@ export const graphGetProductsByID = async (numOfReq: number) => {
       const size = Buffer.byteLength(responseBody, "utf8");
       const sizeInKB = size / 1024;
       sizeInBytes.push(sizeInKB);
+      await sleep(300);
     } catch (error) {
       console.error("Error during iteration:", error);
     }
@@ -158,6 +159,7 @@ export const graph_getProducts_2_fields = async (
       const size = Buffer.byteLength(responseBody, "utf8");
       const sizeInKB = size / 1024;
       sizeInBytes.push(sizeInKB);
+      await sleep(300);
     } catch (error) {
       console.error("Error during iteration:", error);
     }
@@ -202,6 +204,7 @@ export const graphPostProduct = async (
       const size = Buffer.byteLength(responseBody, "utf8");
       const sizeInKB = size / 1024;
       sizeInBytes.push(sizeInKB);
+      await sleep(300);
     } catch (error) {
       console.error("Error during iteration:", error);
     }
@@ -217,7 +220,10 @@ export const graphPostProduct = async (
   };
 };
 
-export const graphPostProduct_3 = async (iterations: number) => {
+export const graphPostProduct_3 = async (
+  iterations: number,
+  numOfReq: number
+) => {
   const responseTime = [];
   const ramArray = [];
   const cpuArray = [];
@@ -241,6 +247,7 @@ export const graphPostProduct_3 = async (iterations: number) => {
       const size = Buffer.byteLength(responseBody, "utf8");
       const sizeInKB = size / 1024;
       sizeInBytes.push(sizeInKB);
+      await sleep(300);
     } catch (error) {
       console.error("Error during iteration:", error);
     }
@@ -254,6 +261,16 @@ export const graphPostProduct_3 = async (iterations: number) => {
     sizeInBytes: sizeInBytes,
   };
 };
+
+export const graphPutProduct = async (
+  iterations: number,
+  numOfReq: number
+) => {};
+
+export const graphDeleteProduct = async (
+  iterations: number,
+  numOfReq: number
+) => {};
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

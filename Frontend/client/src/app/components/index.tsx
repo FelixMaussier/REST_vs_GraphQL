@@ -2,21 +2,13 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { putProducts, deleteProducts } from "../services/rest_api";
-import {
-  graphGetProductsById,
-  graphGetCategories,
-  graphPutProduct,
-  graphDeleteProduct,
-} from "@/app/services/graphql_api";
-import SvarTiderGraf from "./graphs/ResponseGraph";
 import SvarTiderData, { metricsData } from "../types/RestDataType";
 import { SiteHeader } from "@/components/site-header";
 import { Card } from "@/components/ui/card";
 import { CardHeader } from "@/components/ui/card";
 import { CardDescription } from "@/components/ui/card";
 import MetricsTable from "./resultTable";
-import { usePerformance } from "@/hooks/usePerfomance";
+import ApiComparisonChart from "./graphs/ApiComparisonChart";
 import {
   graphGetProducts,
   graphGetProductsByID,
@@ -24,6 +16,8 @@ import {
   graphPostProduct,
   graphPostProduct_3,
   graph_getProducts_2_fields,
+  graphDeleteProduct,
+  graphPutProduct,
 } from "@/app/utils/graphQLTester";
 import {
   getProducts,
@@ -32,10 +26,12 @@ import {
   postProducts,
   postProducts_3,
   getProducts_2_fields,
+  restDeleteProduct,
 } from "../utils/restTester";
 import ChartTest from "./Chart";
 
 const Index = () => {
+  //#region VARIABLES
   const [restPrestandaData, setRestPrestandaData] = useState<SvarTiderData>({});
   const [numOfReq, setNumOfReq] = useState<number>(10);
   const [iterations, setIterations] = useState<number>(1);
@@ -58,9 +54,30 @@ const Index = () => {
     sizeInBytes: [0],
   });
 
+  // Transform performance data for ApiComparisonChart
+  const performanceData = {
+    rounds: restData.cpuArr.map((_, index) => ({
+      round: index + 1,
+      rest: {
+        cpu: parseFloat(restData.cpuArr[index] || "0"),
+        ram: parseFloat(restData.ramArr[index] || "0"),
+        responseTime: restData.responseTime[index] || 0,
+        sizeInBytes: restData.sizeInBytes[index] || 0,
+      },
+      graphql: {
+        cpu: graphqlData.cpuArr[index] || 0,
+        ram: graphqlData.ramArr[index] || 0,
+        responseTime: graphqlData.responseTime[index] || 0,
+        sizeInBytes: graphqlData.sizeInBytes[index] || 0,
+      },
+    })),
+  };
+
+  //#endregion
+
   //#region REST API
   const rest_Products = async () => {
-    const results = await getProducts(numOfReq, iterations);
+    const results = await getProducts(iterations, numOfReq);
     setRestData({
       responseTime: results.responseTime,
       cpuArr: results.cpuArr.filter((val) => val !== null) as string[],
@@ -81,9 +98,7 @@ const Index = () => {
     console.log("index, rest_products_3: ", results);
   };
   const rest_ProductsID = async () => {
-    // const { results, metrics } = await getProductsID(numOfReq);
-    // setMetricData(metrics);
-    const results = await getProductsID(numOfReq);
+    const results = await getProductsID(iterations, numOfReq);
     setRestData({
       responseTime: results.responseTime,
       cpuArr: results.cpuArr.filter((val) => val !== null) as string[],
@@ -94,7 +109,7 @@ const Index = () => {
   };
 
   const rest_Products_2_fields = async () => {
-    const results = await getProducts_2_fields(numOfReq, iterations);
+    const results = await getProducts_2_fields(iterations, numOfReq);
     setRestData({
       responseTime: [results.totalDuration],
       cpuArr: results.cpuArr.filter((val) => val !== null) as string[],
@@ -105,7 +120,7 @@ const Index = () => {
   };
 
   const rest_PostProducts = async () => {
-    const results = await postProducts(numOfReq);
+    const results = await postProducts(iterations, numOfReq);
     console.log("index, rest_postProduct   ", results);
     setRestData({
       responseTime: results.responseTime,
@@ -116,7 +131,7 @@ const Index = () => {
   };
 
   const rest_PostProducts_3 = async () => {
-    const results = await postProducts_3(iterations);
+    const results = await postProducts_3(iterations, numOfReq);
     console.log("index, rest_postProduct_3  ", results);
     setRestData({
       responseTime: results.responseTime,
@@ -127,12 +142,12 @@ const Index = () => {
   };
 
   const rest_PutProducts = async () => {
-    //const { results, metrics } = await putProducts();
+    //const { results, metrics } = await putProducts(iterations, numOfReq);
     //setMetricData(metrics);
   };
 
   const rest_DeleteProducts = async () => {
-    const result = await deleteProducts();
+    const result = await restDeleteProduct(iterations, numOfReq);
     console.log("index, deleteData", result);
   };
 
@@ -142,8 +157,6 @@ const Index = () => {
 
   const graph_getProducts = async () => {
     const results = await graphGetProducts(iterations, numOfReq);
-    console.log("iterations: ", iterations);
-    console.log("numOfReq: ", numOfReq);
     console.log("index, graph_getProducts: ", results);
 
     setGraphqlData({
@@ -160,7 +173,7 @@ const Index = () => {
   };
 
   const graph_GetProducts_3 = async () => {
-    const results = await graphGetProducts_3(numOfReq, iterations);
+    const results = await graphGetProducts_3(iterations, numOfReq);
     setGraphqlData({
       responseTime: results.responseTime,
       cpuArr: results.cpuArr
@@ -175,7 +188,7 @@ const Index = () => {
   };
 
   const graph_GetProductsById = async () => {
-    const results = await graphGetProductsByID(numOfReq);
+    const results = await graphGetProductsByID(iterations, numOfReq);
     setGraphqlData({
       responseTime: results.responseTime,
       cpuArr: results.cpuArr
@@ -187,11 +200,6 @@ const Index = () => {
       sizeInBytes: results.sizeInBytes,
     });
     console.log("results: ", results);
-  };
-
-  const graph_GetCategories = async () => {
-    const result = await graphGetCategories(numOfReq);
-    console.log("index, graph_GetCategories: ", result);
   };
 
   const graph_GetProducts_2_fields = async () => {
@@ -227,7 +235,7 @@ const Index = () => {
   };
 
   const graph_PostProduct_3 = async () => {
-    const results = await graphPostProduct_3(iterations);
+    const results = await graphPostProduct_3(iterations, numOfReq);
     console.log("index, graph_postProduct_3 ", results);
     setGraphqlData({
       responseTime: results.responseTime,
@@ -241,16 +249,16 @@ const Index = () => {
     });
   };
   const graph_PutProduct = async () => {
-    const { results, metrics } = await graphPutProduct(numOfReq);
-    console.log("index, graph_PutProduct: ", results);
-    setMetricData(metrics);
+    const results = await graphPutProduct(iterations, numOfReq);
   };
 
   const graph_DeleteProduct = async () => {
-    const result = await graphDeleteProduct();
+    const result = await graphDeleteProduct(iterations, numOfReq);
     console.log("index, graph_DeleteProduct: ", result);
   };
   //#endregion
+
+  //#region RETURN
 
   return (
     <SidebarProvider>
@@ -339,29 +347,18 @@ const Index = () => {
                 </Card>
               </div>
               <div className="px-4 lg:px-6">
-                {metricData ? (
-                  <MetricsTable
-                    api={metricData.api}
-                    averageResponseTime={metricData.avaregeResponseTime}
-                    method={metricData.method}
-                    numOfReq={metricData.numOfReq}
-                    numOfUsers={metricData.numOfUsers}
-                    requestsPer10ms={metricData.requestsPer10ms}
-                    throughput={metricData.throughput}
-                    totalTime={metricData.totalTime}
-                  />
-                ) : (
-                  <p>Loading metrics data...</p>
-                )}
+                <ApiComparisonChart apiData={performanceData} />
               </div>
-              <ChartTest
-                restData={restData}
-                graphqlData={graphqlData}
-                iterations={iterations}
-                numOfReq={numOfReq}
-                title="REST API vs GraphQL Performance"
-                description="Comparison of performance metrics between REST and GraphQL"
-              />
+              <div className="px-4 lg:px-6">
+                <ChartTest
+                  restData={restData}
+                  graphqlData={graphqlData}
+                  iterations={iterations}
+                  numOfReq={numOfReq}
+                  title="REST API vs GraphQL Performance"
+                  description="Comparison of performance metrics between REST and GraphQL"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -370,4 +367,5 @@ const Index = () => {
   );
 };
 
+//#endregion
 export default Index;

@@ -7,10 +7,10 @@ interface data {
   cpuArr: number[];
   ramArr: number[];
 }
-import { da, faker, Faker } from "@faker-js/faker";
+import { faker } from "@faker-js/faker";
 import { fetchRestProductIds } from "./GetIDFromDB";
 
-export const getProducts = async (numOfReq: number, iterations: number) => {
+export const getProducts = async (iterations: number, numOfReq: number) => {
   var responseTime = [];
   var cpuArray = [];
   var ramArray = [];
@@ -30,6 +30,7 @@ export const getProducts = async (numOfReq: number, iterations: number) => {
     const size = Buffer.byteLength(body, "utf8");
     const sizeInKB = size / 1024;
     sizeInBytes.push(sizeInKB);
+    await sleep(300);
   }
 
   return {
@@ -41,8 +42,8 @@ export const getProducts = async (numOfReq: number, iterations: number) => {
 };
 
 export const getProducts_3_tables = async (
-  numOfReq: number,
-  iterations: number
+  iterations: number,
+  numOfReq: number
 ) => {
   var responseTime = [];
   var cpuArray = [];
@@ -63,6 +64,7 @@ export const getProducts_3_tables = async (
     const size = Buffer.byteLength(body, "utf8");
     const sizeInKB = size / 1024;
     sizeInBytes.push(sizeInKB);
+    await sleep(300);
   }
 
   return {
@@ -73,7 +75,7 @@ export const getProducts_3_tables = async (
   };
 };
 
-export const getProductsID = async (numOfReq: number) => {
+export const getProductsID = async (iterations: number, numOfReq: number) => {
   var responseTime = [];
   var cpuArray = [];
   var ramArray = [];
@@ -95,6 +97,7 @@ export const getProductsID = async (numOfReq: number) => {
     const size = Buffer.byteLength(body, "utf8");
     const sizeInKB = size / 1024;
     sizeInBytes.push(sizeInKB);
+    await sleep(300);
   }
   const totalDuration = performance.now() - totalStartTime;
 
@@ -132,6 +135,7 @@ export const getProducts_2_fields = async (
     const size = Buffer.byteLength(body, "utf8");
     const sizeInKB = size / 1024;
     sizeInBytes.push(sizeInKB);
+    await sleep(300);
   }
 
   const totalDuration = performance.now() - totalStartTime;
@@ -145,7 +149,7 @@ export const getProducts_2_fields = async (
   };
 };
 
-export const postProducts = async (iterations: number) => {
+export const postProducts = async (iterations: number, numOfReq: number) => {
   var responseTime = [];
   var cpuArray = [];
   var ramArray = [];
@@ -180,6 +184,7 @@ export const postProducts = async (iterations: number) => {
     const size = Buffer.byteLength(body, "utf8");
     const sizeInKB = size / 1024;
     sizeInBytes.push(sizeInKB);
+    await sleep(300);
   }
   const totalDuration = performance.now() - totalStartTime;
 
@@ -192,7 +197,7 @@ export const postProducts = async (iterations: number) => {
   };
 };
 
-export const postProducts_3 = async (iterations: number) => {
+export const postProducts_3 = async (iterations: number, numOfReq: number) => {
   var responseTime = [];
   var cpuArray = [];
   var ramArray = [];
@@ -229,6 +234,7 @@ export const postProducts_3 = async (iterations: number) => {
     const size = Buffer.byteLength(body, "utf8");
     const sizeInKB = size / 1024;
     sizeInBytes.push(sizeInKB);
+    await sleep(300);
   }
   const totalDuration = performance.now() - totalStartTime;
 
@@ -240,6 +246,15 @@ export const postProducts_3 = async (iterations: number) => {
     sizeInBytes: sizeInBytes,
   };
 };
+
+export const restDeleteProduct = async (
+  iterations: number,
+  numOfReq: number
+) => {};
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 //#region DATA GENERATORS
 const generateDataForProduct = async () => {
