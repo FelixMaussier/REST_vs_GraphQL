@@ -65,7 +65,6 @@ api.get('/products_3', async (req, res) => {
 
 api.get('/products/:id', async (req, res) => {
   const { id } = req.params;
-  //const limit = parseInt(req.query.limit as string) || 10;
   const products = await db('produkt').where({ id }).first();
 
   res.json({ data: products})
