@@ -84,7 +84,7 @@ export const getProductsID = async (iterations: number, numOfReq: number) => {
   const validIDs = await fetchRestProductIds(numOfReq);
 
   const totalStartTime = performance.now();
-  for (let i = 0; i < numOfReq; i++) {
+  for (let i = 0; i < iterations; i++) {
     const id = validIDs[i];
     const startTime = performance.now();
     const data = await fetch(`http://localhost:3002/products/${id}`);
@@ -225,7 +225,6 @@ export const postProducts_3 = async (iterations: number, numOfReq: number) => {
     });
 
     const body = await data.text();
-    console.log(body);
     const totalTime = performance.now() - startTime;
     responseTime.push(totalTime);
     cpuArray.push(data.headers.get("x-cpu"));
@@ -247,10 +246,116 @@ export const postProducts_3 = async (iterations: number, numOfReq: number) => {
   };
 };
 
-export const restDeleteProduct = async (
-  iterations: number,
-  numOfReq: number
-) => {};
+export const putProduct = async (iterations: number, numOfReq: number) => {
+  var responseTime = [];
+  var cpuArray = [];
+  var ramArray = [];
+  var sizeInBytes = [];
+
+  const totalStartTime = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    const validIDs = await fetchRestProductIds(numOfReq);
+    const productData = await generateDataForPutProduct();
+    const startTime = performance.now();
+    const data = await fetch(`http://localhost:3002/products/${validIDs[i]}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        artikelnummer: productData.artikelnummer,
+        beskrivning: productData.beskrivning,
+        kategori_id: productData.kategori_id,
+        lagerantal: productData.lagerantal,
+        namn: productData.namn,
+        pris: productData.pris,
+        vikt: productData.vikt,
+        produkt_attribut: productData.produkt_attribut
+      }),
+    });
+
+    const body = await data.text();
+    const totalTime = performance.now() - startTime;
+    responseTime.push(totalTime);
+    cpuArray.push(data.headers.get("x-cpu"));
+    ramArray.push(data.headers.get("x-ram"));
+
+    const size = Buffer.byteLength(body, "utf8");
+    const sizeInKB = size / 1024;
+    sizeInBytes.push(sizeInKB);
+    await sleep(300);
+  }
+  const totalDuration = performance.now() - totalStartTime;
+
+  return {
+    totalDuration: totalDuration,
+    responseTime: responseTime,
+    cpuArr: cpuArray,
+    ramArr: ramArray,
+    sizeInBytes: sizeInBytes,
+  };
+};
+
+export const restDeleteProduct = async (iterations: number, numOfReq: number) => {
+  const responseTime = [];
+  const ramArray = [];
+  const cpuArray = [];
+  const sizeInBytes = [];
+
+  const totalStartTime = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    try {
+      const validIDs = await fetchRestProductIds(numOfReq);
+      console.log("Got validIDs:", validIDs);
+      
+      const startTime = performance.now();
+      
+      // Skapa en array av delete-anrop för alla ID:n
+      const deletePromises = validIDs.map(id => 
+        fetch(`http://localhost:3002/products/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        })
+      );
+
+      // Vänta på att alla delete-anrop ska slutföras
+      const responses = await Promise.all(deletePromises);
+      const bodies = await Promise.all(responses.map(res => res.text()));
+      
+      console.log("Delete responses:", bodies);
+      
+      const totalTime = performance.now() - startTime;
+      responseTime.push(totalTime);
+      
+      // Använd första svaret för CPU och RAM (eller ta genomsnittet om du vill)
+      cpuArray.push(responses[0].headers.get("x-cpu"));
+      ramArray.push(responses[0].headers.get("x-ram"));
+
+      // Beräkna total storlek för alla svar
+      const totalSize = bodies.reduce((acc, body) => acc + Buffer.byteLength(body, "utf8"), 0);
+      const sizeInKB = totalSize / 1024;
+      sizeInBytes.push(sizeInKB);
+      
+      await sleep(300);
+    } catch (error) {
+      console.error("Error during iteration:", error);
+    }
+  }
+
+  const totalDuration = performance.now() - totalStartTime;
+  const result = {
+    totalDuration: totalDuration,
+    responseTime: responseTime,
+    cpuArr: cpuArray,
+    ramArr: ramArray,
+    sizeInBytes: sizeInBytes,
+  };
+  
+  console.log("Returning result:", result);
+  return result;
+};
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -296,4 +401,38 @@ const generateDataForProduct_3 = async () => {
   return product;
 };
 
+const generateDataForPutProduct = async () => {
+  const product = {
+    artikelnummer: faker.string.uuid(),
+    beskrivning: faker.commerce.productDescription(),
+    kategori_id: faker.number.int({ min: 1, max: 50 }),
+    lagerantal: faker.number.int({ min: 0, max: 100 }),
+    namn: faker.commerce.productName(),
+    pris: parseFloat(faker.commerce.price({ min: 10, max: 1000 })),
+    vikt: faker.number.int({ min: 1, max: 5 }),
+    produkt_attribut: [
+      {
+        attribut_namn: "Färg",
+        attribut_varde: faker.color.human(),
+      },
+      {
+        attribut_namn: "Storlek",
+        attribut_varde: faker.helpers.arrayElement(["S", "M", "L", "XL"]),
+      },
+      {
+        attribut_namn: "Material",
+        attribut_varde: faker.helpers.arrayElement([
+          "Bomull",
+          "Polyester",
+          "Läder",
+          "Trä",
+        ]),
+      },
+    ],
+  };
+
+  return product;
+};
+
 //#endregion
+

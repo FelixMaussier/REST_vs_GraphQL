@@ -214,32 +214,51 @@ api.post('/products', async (req, res) => {
 //#endregion
 
 //#region PUT
-api.put('/products', async (req, res) => {
-    const {  
-        id,
-        artikelnummer ,
-        namn,
-        pris,
-        lagerantal,
-        vikt,
-        kategori_id,
-        beskrivning,
-    } = req.body;
+api.put('/products/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { produkt_attribut, ...productData } = req.body;
 
-    const updated = await db('produkt')
-      .where({ id })
-      .update({
-        artikelnummer,
-        namn,
-        pris,
-        lagerantal,
-        vikt,
-        kategori_id,
-        beskrivning,
-      })
-      .returning('*');
-  
-      res.json({ message: "Produkten uppdaterades.", produkt: updated[0] });
+    const updatedProduct = await db.transaction(async (trx) => {
+      
+      const [updated] = await trx('produkt')
+        .where({ id })
+        .update(productData)
+        .returning('*');
+
+      await trx('produktattribut')
+        .where({ produkt_id: id })
+        .del();
+
+      if (produkt_attribut && produkt_attribut.length > 0) {
+        const attributToInsert = produkt_attribut.map((attr: any) => ({
+          produkt_id: id,
+          attribut_namn: attr.attribut_namn,
+          attribut_varde: attr.attribut_varde,
+        }));
+
+        await trx('produktattribut').insert(attributToInsert);
+      }
+
+      const kategori = await trx('kategori')
+        .where({ id: updated.kategori_id })
+        .first();
+
+      const attributer = await trx('produktattribut')
+        .where({ produkt_id: id });
+
+      return {
+        ...updated,
+        kategori,
+        attributer,
+      };
+    });
+
+    res.json(updatedProduct);
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ error: "Something went wrong!" });
+  }
 });
 //#endregion
 
@@ -247,7 +266,10 @@ api.put('/products', async (req, res) => {
 api.delete('/products/:id', async (req, res) => {
     const { id } = req.params;
     const deletedCount = await db('produkt').where({ id }).del();
-    res.json({ message: `Product with ID ${id} deleted.` });
+    if (deletedCount === 0) {
+      throw new Error(`No product found with ID ${id}`);
+    }
+    res.json({ message: `Produkt med ID ${id} raderades.` });
 });
 
 //#endregion

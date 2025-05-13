@@ -2,12 +2,10 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import SvarTiderData, { metricsData } from "../types/RestDataType";
 import { SiteHeader } from "@/components/site-header";
 import { Card } from "@/components/ui/card";
 import { CardHeader } from "@/components/ui/card";
 import { CardDescription } from "@/components/ui/card";
-import MetricsTable from "./resultTable";
 import ApiComparisonChart from "./graphs/ApiComparisonChart";
 import {
   graphGetProducts,
@@ -27,19 +25,11 @@ import {
   postProducts_3,
   getProducts_2_fields,
   restDeleteProduct,
+  putProduct,
 } from "../utils/restTester";
-import ChartTest from "./Chart";
+import ChartTest from "./graphs/Chart";
 
-const Index = () => {
-  //#region VARIABLES
-  const [restPrestandaData, setRestPrestandaData] = useState<SvarTiderData>({});
-  const [numOfReq, setNumOfReq] = useState<number>(10);
-  const [iterations, setIterations] = useState<number>(1);
-
-  const [metricData, setMetricData] = useState<metricsData | undefined>(
-    undefined
-  );
-
+const useApiMetrics = () => {
   const [restData, setRestData] = useState({
     cpuArr: ["0"],
     ramArr: ["0"],
@@ -54,7 +44,39 @@ const Index = () => {
     sizeInBytes: [0],
   });
 
-  // Transform performance data for ApiComparisonChart
+  const updateMetrics = (results: any, isGraphQL: boolean = false) => {
+    const transformedData = {
+      responseTime: results.responseTime,
+      cpuArr: results.cpuArr
+        .filter((val: any) => val !== null)
+        .map((val: any) => parseFloat(val as string)),
+      ramArr: results.ramArr
+        .filter((val: any) => val !== null)
+        .map((val: any) => parseFloat(val as string)),
+      sizeInBytes: results.sizeInBytes,
+    };
+
+    if (isGraphQL) {
+      setGraphqlData(transformedData);
+    } else {
+      setRestData(transformedData);
+    }
+
+    return results;
+  };
+
+  return {
+    restData,
+    graphqlData,
+    updateMetrics,
+  };
+};
+
+const Index = () => {
+  const { restData, graphqlData, updateMetrics } = useApiMetrics();
+  const [numOfReq, setNumOfReq] = useState<number>(10);
+  const [iterations, setIterations] = useState<number>(3);
+
   const performanceData = {
     rounds: restData.cpuArr.map((_, index) => ({
       round: index + 1,
@@ -78,77 +100,49 @@ const Index = () => {
   //#region REST API
   const rest_Products = async () => {
     const results = await getProducts(iterations, numOfReq);
-    setRestData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr.filter((val) => val !== null) as string[],
-      ramArr: results.ramArr.filter((val) => val !== null) as string[],
-      sizeInBytes: results.sizeInBytes,
-    });
+    updateMetrics(results);
     console.log("index, rest_Products: ", results);
   };
 
   const rest_Products_3 = async () => {
-    const results = await getProducts_3_tables(numOfReq, iterations);
-    setRestData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr.filter((val) => val !== null) as string[],
-      ramArr: results.ramArr.filter((val) => val !== null) as string[],
-      sizeInBytes: results.sizeInBytes,
-    });
+    const results = await getProducts_3_tables(iterations, numOfReq);
+    updateMetrics(results);
     console.log("index, rest_products_3: ", results);
   };
   const rest_ProductsID = async () => {
     const results = await getProductsID(iterations, numOfReq);
-    setRestData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr.filter((val) => val !== null) as string[],
-      ramArr: results.ramArr.filter((val) => val !== null) as string[],
-      sizeInBytes: results.sizeInBytes,
-    });
+    updateMetrics(results);
     console.log("index, rest_ProductsID: ", results);
   };
 
   const rest_Products_2_fields = async () => {
     const results = await getProducts_2_fields(iterations, numOfReq);
-    setRestData({
-      responseTime: [results.totalDuration],
-      cpuArr: results.cpuArr.filter((val) => val !== null) as string[],
-      ramArr: results.ramArr.filter((val) => val !== null) as string[],
-      sizeInBytes: results.sizeInBytes,
-    });
+    updateMetrics(results);
     console.log("index, rest_Products: ", results);
   };
 
   const rest_PostProducts = async () => {
     const results = await postProducts(iterations, numOfReq);
     console.log("index, rest_postProduct   ", results);
-    setRestData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr.filter((val) => val !== null) as string[],
-      ramArr: results.ramArr.filter((val) => val !== null) as string[],
-      sizeInBytes: results.sizeInBytes,
-    });
+    updateMetrics(results);
   };
 
   const rest_PostProducts_3 = async () => {
     const results = await postProducts_3(iterations, numOfReq);
     console.log("index, rest_postProduct_3  ", results);
-    setRestData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr.filter((val) => val !== null) as string[],
-      ramArr: results.ramArr.filter((val) => val !== null) as string[],
-      sizeInBytes: results.sizeInBytes,
-    });
+    updateMetrics(results);
   };
 
   const rest_PutProducts = async () => {
-    //const { results, metrics } = await putProducts(iterations, numOfReq);
-    //setMetricData(metrics);
+    const results = await putProduct(iterations, numOfReq);
+    console.log("index, rest put_product:", results);
+    updateMetrics(results);
   };
 
   const rest_DeleteProducts = async () => {
-    const result = await restDeleteProduct(iterations, numOfReq);
-    console.log("index, deleteData", result);
+    const results = await restDeleteProduct(iterations, numOfReq);
+    console.log("index, rest_deleteData", results);
+    updateMetrics(results);
   };
 
   //#endregion
@@ -157,104 +151,51 @@ const Index = () => {
 
   const graph_getProducts = async () => {
     const results = await graphGetProducts(iterations, numOfReq);
+    updateMetrics(results, true);
     console.log("index, graph_getProducts: ", results);
-
-    setGraphqlData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      ramArr: results.ramArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      sizeInBytes: results.sizeInBytes,
-    });
-    const { responseTime, cpuArr, ramArr } = results;
   };
 
   const graph_GetProducts_3 = async () => {
     const results = await graphGetProducts_3(iterations, numOfReq);
-    setGraphqlData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      ramArr: results.ramArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      sizeInBytes: results.sizeInBytes,
-    });
+    updateMetrics(results, true);
     console.log("index, graph_graph_3", results);
   };
 
   const graph_GetProductsById = async () => {
     const results = await graphGetProductsByID(iterations, numOfReq);
-    setGraphqlData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      ramArr: results.ramArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      sizeInBytes: results.sizeInBytes,
-    });
-    console.log("results: ", results);
+    updateMetrics(results, true);
+    console.log("index, graph_getProductByID: ", results);
   };
 
   const graph_GetProducts_2_fields = async () => {
     const results = await graph_getProducts_2_fields(iterations, numOfReq);
 
     console.log("index, graph_getProduct_2_fields", results);
-    setGraphqlData({
-      responseTime: [results.totalDuration],
-      cpuArr: results.cpuArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      ramArr: results.ramArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      sizeInBytes: results.sizeInBytes,
-    });
+    updateMetrics(results, true);
   };
 
   const graph_PostProduct = async () => {
     const results = await graphPostProduct(iterations, numOfReq);
 
     console.log("index, graph_postProduct ", results);
-    setGraphqlData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      ramArr: results.ramArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      sizeInBytes: results.sizeInBytes,
-    });
+    updateMetrics(results, true);
   };
 
   const graph_PostProduct_3 = async () => {
     const results = await graphPostProduct_3(iterations, numOfReq);
     console.log("index, graph_postProduct_3 ", results);
-    setGraphqlData({
-      responseTime: results.responseTime,
-      cpuArr: results.cpuArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      ramArr: results.ramArr
-        .filter((val) => val !== null)
-        .map((val) => parseFloat(val as string)),
-      sizeInBytes: results.sizeInBytes,
-    });
+    updateMetrics(results, true);
   };
   const graph_PutProduct = async () => {
     const results = await graphPutProduct(iterations, numOfReq);
+    console.log("index, graph_PutProduct: ", results);
+    updateMetrics(results, true);
   };
 
   const graph_DeleteProduct = async () => {
-    const result = await graphDeleteProduct(iterations, numOfReq);
-    console.log("index, graph_DeleteProduct: ", result);
+    const results = await graphDeleteProduct(iterations, numOfReq);
+    console.log("index, graph_DeleteProduct: ", results);
+    updateMetrics(results, true);
   };
   //#endregion
 
@@ -328,9 +269,6 @@ const Index = () => {
                     <Button onClick={() => graph_GetProducts_2_fields()}>
                       getProducts 2 fields
                     </Button>
-                    {/* <Button onClick={() => graph_GetCategories()}>
-                      getCategories
-                    </Button> */}
                     <Button onClick={() => graph_PostProduct()}>
                       postProduct
                     </Button>

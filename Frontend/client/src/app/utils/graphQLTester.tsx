@@ -7,6 +7,9 @@ import {
   generateDataForProduct_3,
   postProduct_3,
   getProducts_2_fields,
+  putProduct,
+  generateDataForPutProduct,
+  deleteProduct,
 } from "@/lib/api/GraphQLQueries";
 import { fetchGraphQLProductIds } from "@/app/utils/GetIDFromDB";
 import { da, faker } from "@faker-js/faker";
@@ -100,7 +103,7 @@ export const graphGetProductsByID = async (
   const validIDs = await fetchGraphQLProductIds(numOfReq);
 
   const totalStartTime = performance.now();
-  for (let i = 0; i < numOfReq; i++) {
+  for (let i = 0; i < iterations; i++) {
     try {
       const id = validIDs[i];
       const startTime = performance.now();
@@ -186,13 +189,11 @@ export const graphPostProduct = async (
   const sizeInBytes = [];
 
   const totalStartTime = performance.now();
-  for (let i = 0; i < numOfReq; i++) {
+  for (let i = 0; i < iterations; i++) {
     try {
       const productData = await generateDataForProduct();
       const startTime = performance.now();
       const data = await postProduct(productData);
-
-      console.log("data: teste:  ", data);
       const totalTime = performance.now() - startTime;
 
       responseTime.push(totalTime);
@@ -262,15 +263,107 @@ export const graphPostProduct_3 = async (
   };
 };
 
-export const graphPutProduct = async (
-  iterations: number,
-  numOfReq: number
-) => {};
+export const graphPutProduct = async (iterations: number, numOfReq: number) => {
+  const responseTime = [];
+  const ramArray = [];
+  const cpuArray = [];
+  const sizeInBytes = [];
 
-export const graphDeleteProduct = async (
-  iterations: number,
-  numOfReq: number
-) => {};
+  const totalStartTime = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    try {
+      const validIDs = await fetchGraphQLProductIds(numOfReq);
+      const productData = await generateDataForPutProduct();
+      const startTime = performance.now();
+      
+      const data = await putProduct(validIDs[i], productData);
+
+      const totalTime = performance.now() - startTime;
+
+      responseTime.push(totalTime);
+      cpuArray.push(data.cpu);
+      ramArray.push(data.ram);
+
+      const responseBody = JSON.stringify(data.data);
+
+      const size = Buffer.byteLength(responseBody, "utf8");
+      const sizeInKB = size / 1024;
+      sizeInBytes.push(sizeInKB);
+      await sleep(300);
+    } catch (error) {
+      console.error("Error during iteration:", error);
+    }
+  }
+  const totalDuration = performance.now() - totalStartTime;
+  return {
+    totalDuration: totalDuration,
+    responseTime: responseTime,
+    cpuArr: cpuArray,
+    ramArr: ramArray,
+    sizeInBytes: sizeInBytes,
+  };
+};
+
+export const graphDeleteProduct = async (iterations: number, numOfReq: number) => {
+  const responseTime = [];
+  const ramArray = [];
+  const cpuArray = [];
+  const sizeInBytes = [];
+
+  const totalStartTime = performance.now();
+  for (let i = 0; i < iterations; i++) {
+    try {
+      const validIDs = await fetchGraphQLProductIds(numOfReq);
+      console.log("Got validIDs:", validIDs);
+      
+      const startTime = performance.now();
+      
+      const deletePromises = validIDs.map(async (id) => {
+        try {
+          return await deleteProduct(id);
+        } catch (error) {
+          console.error(`Failed to delete product ${id}:`, error);
+          return null;
+        }
+      });
+
+      const responses = await Promise.all(deletePromises);
+      const successfulResponses = responses.filter(r => r !== null);
+      
+      if (successfulResponses.length === 0) {
+        console.error("All delete operations failed in this iteration");
+        continue;
+      }
+
+      const totalTime = performance.now() - startTime;
+      responseTime.push(totalTime);
+      
+      cpuArray.push(successfulResponses[0].cpu);
+      ramArray.push(successfulResponses[0].ram);
+
+      const totalSize = successfulResponses.reduce((acc, response) => 
+        acc + Buffer.byteLength(JSON.stringify(response.data), "utf8"), 0);
+      const sizeInKB = totalSize / 1024;
+      sizeInBytes.push(sizeInKB);
+      
+      await sleep(300);
+    } catch (error) {
+      console.error("Error during iteration:", error);
+    }
+  }
+
+  const totalDuration = performance.now() - totalStartTime;
+  const result = {
+    totalDuration: totalDuration,
+    responseTime: responseTime,
+    cpuArr: cpuArray,
+    ramArr: ramArray,
+    sizeInBytes: sizeInBytes,
+  };
+  
+  console.log("Returning result:", result);
+  return result;
+};
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

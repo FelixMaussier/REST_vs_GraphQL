@@ -66,7 +66,7 @@ type Mutation {
   postProduct(input: ProduktInput!): Produkt! 
   postProduct_3(input: ProduktInput!): Produkt!
   putProduct(id: ID!, input: ProduktInput!): Produkt! 
-  deleteProduct(id: ID!): [Produkt!]!
+  deleteProduct(id: ID!): String
 }
 `);
 

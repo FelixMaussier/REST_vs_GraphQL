@@ -160,10 +160,7 @@ export const getProducts_3 = async (limit: number) => {
 
 
 
-export const postProduct = async (product: any) => {
-  
-  console.log("product to post: ",product);
-   
+export const postProduct = async (product: any) => { 
   const query = `
   mutation postProduct($input: ProduktInput!) {
     postProduct(input: $input) {
@@ -193,7 +190,6 @@ export const postProduct = async (product: any) => {
     }),
   });
 
-  console.log("qury res: ", response)
   const data = await response.json();
     return {
       data: data.data,
@@ -204,6 +200,8 @@ export const postProduct = async (product: any) => {
 
 
 export const postProduct_3 = async (product: any) => {
+
+  console.log("new productData: ")
 
   const query = `
   mutation postProduct_3($input: ProduktInput!) {
@@ -241,17 +239,99 @@ const response = await fetch(endpoint, {
   }),
 });
 
-console.log("qury res: ", response)
 
   const data = await response.json();
-    return {
-      data: data.data,
-      cpu: response.headers.get("x-cpu"),
-      ram: response.headers.get("x-ram"),
-    };
+  
+  return {
+    data: data.data,
+    cpu: response.headers.get("x-cpu"),
+    ram: response.headers.get("x-ram"),
+  };
 
 }
 
+
+export const putProduct = async (id: any, product: any)=> {
+  const query = `
+  mutation putProduct($id: ID!, $input: ProduktInput!) {
+    putProduct(id: $id, input: $input) {
+      id
+      artikelnummer
+      namn
+      pris
+      lagerantal
+      vikt
+      beskrivning
+      kategori {
+        id
+        namn
+        beskrivning
+      }
+      attributer {
+        id
+        attribut_namn
+        attribut_varde
+      }
+    }
+  }
+  `;
+
+  const variables = { 
+    id: id,
+    input: product 
+  };
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query,
+      variables,
+    }),
+  });
+
+  const data = await response.json();
+  return {
+    data: data.data,
+    cpu: response.headers.get("x-cpu"),
+    ram: response.headers.get("x-ram"),
+  };
+}
+
+export const deleteProduct = async (id: any) => {
+  const query = `
+  mutation deleteProduct($id: ID!) {
+    deleteProduct(id: $id)
+  }
+  `;
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query,
+      variables: { id },
+    }),
+  });
+
+  const data = await response.json();
+  console.log("Delete response:", data);
+  
+  if (data.errors) {
+    console.error("GraphQL errors:", data.errors);
+    throw new Error(data.errors[0].message);
+  }
+
+  return {
+    data: data.data,
+    cpu: response.headers.get("x-cpu"),
+    ram: response.headers.get("x-ram"),
+  };
+}
 
 export const generateDataForProduct = async ()=> {
   const product = {
@@ -292,3 +372,31 @@ export const generateDataForProduct_3 = async () => {
   return product;
   
 }
+
+export const generateDataForPutProduct = async () => {
+  const product = {
+    artikelnummer: faker.string.uuid(),
+    beskrivning: faker.commerce.productDescription(),
+    kategori_id: faker.number.int({ min: 1, max: 50 }),
+    lagerantal: faker.number.int({ min: 0, max: 100 }),
+    namn: faker.commerce.productName(),
+    pris: parseFloat(faker.commerce.price({ min: 10, max: 1000 })),
+    vikt: faker.number.int({ min: 1, max: 5 }),
+    produkt_attribut: [
+      {
+        attribut_namn: "Färg",
+        attribut_varde: faker.color.human(),
+      },
+      {
+        attribut_namn: "Storlek",
+        attribut_varde: faker.helpers.arrayElement(["S", "M", "L", "XL"]),
+      },
+      {
+        attribut_namn: "Material",
+        attribut_varde: faker.helpers.arrayElement(["Bomull", "Polyester", "Läder", "Trä"]),
+      }
+    ],
+  };
+
+  return product;
+};

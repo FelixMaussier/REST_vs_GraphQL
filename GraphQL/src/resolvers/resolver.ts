@@ -114,56 +114,54 @@ postProduct_3: async ({ input }: any) => {
     };
   });
 },
- 
-
-
-  // const [newProduct] = await db('produkt')
-  //   .insert({
-  //     artikelnummer: input.artikelnummer,
-  //     namn: input.namn,
-  //     pris: input.pris,
-  //     lagerantal: input.lagerantal,
-  //     vikt: input.vikt,
-  //     kategori_id: input.kategori_id,
-  //     beskrivning: input.beskrivning
-  //   })
-  //   .returning('*');
-
-  // console.log("newProduct: ", newProduct);
-
-  // const productAttributes = (input.attribut || []).map((attr: any) => ({
-  //   produkt_id: newProduct.id,
-  //   attribut_namn: attr.namn,
-  //   attribut_varde: attr.varde
-  // }));
-
-  // if (productAttributes.length > 0) {
-  //   await db('produktattribut').insert(productAttributes);
-  // }
-  
-  // const attributes = await db('produktattribut')
-  //   .where({ produkt_id: newProduct.id });
-
-  // return {
-  //   artikelnummer: newProduct.artikelnummer,
-  //   namn: newProduct.namn,
-  //   pris: newProduct.pris,
-  //   lagerantal: newProduct.lagerantal,
-  //   vikt: newProduct.vikt,
-  //   kategori_id: newProduct.kategori_id,
-  //   beskrivning: newProduct.beskrivning,
-  //   id: newProduct.id
-  // };
-
 putProduct: async ({ id, input }: { id: number; input: any }) => {
-  return (await db('produkt')
-    .where({ id })
-    .update(input)
-    .returning('*'))[0];
+  return await db.transaction(async (trx) => {
+    const { produkt_attribut, ...productData } = input;
+    
+    const [updatedProduct] = await trx('produkt')
+      .where({ id })
+      .update(productData)
+      .returning('*');
+
+    await trx('produktattribut')
+      .where({ produkt_id: id })
+      .del();
+
+    if (produkt_attribut && produkt_attribut.length > 0) {
+      const attributToInsert = produkt_attribut.map((attr: any) => ({
+        produkt_id: id,
+        attribut_namn: attr.attribut_namn,
+        attribut_varde: attr.attribut_varde,
+      }));
+
+      await trx('produktattribut').insert(attributToInsert);
+    }
+
+    const kategori = await trx('kategori')
+      .where({ id: updatedProduct.kategori_id })
+      .first();
+
+    const attributer = await trx('produktattribut')
+      .where({ produkt_id: id });
+
+    return {
+      ...updatedProduct,
+      kategori,
+      attributer,
+    };
+  });
 },
 deleteProduct: async ({ id }: { id: number }) => {
-            await db('produkt').where({ id }).del();
-            return `Produkt med ID ${id} raderades.`;
+  try {
+    const deletedCount = await db('produkt').where({ id }).del();
+    if (deletedCount === 0) {
+      throw new Error(`No product found with ID ${id}`);
+    }
+    return `Produkt med ID ${id} raderades.`;
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    throw error;
+  }
 },
 
   //#endregion
