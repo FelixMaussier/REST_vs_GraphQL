@@ -2,8 +2,11 @@ import express from 'express';
 import routes from './routes/routes';
 import cors from 'cors';
 import morgan from 'morgan';
+import os from 'os';
 
 const app = express();
+const CPU_COUNT = os.cpus().length;
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
@@ -25,14 +28,14 @@ app.use((req, res, next) => {
     const endMem = process.memoryUsage();
     const elapsedTime = process.hrtime(startTime);
     
-    // Konvertera elapsed time till millisekunder
+    // Beräkna förfluten tid i millisekunder
     const elapsedMs = elapsedTime[0] * 1000 + elapsedTime[1] / 1000000;
     
-    // CPU-tid i millisekunder
+    // Total CPU-tid i millisekunder (user + system)
     const cpuMs = (endCpu.user + endCpu.system) / 1000;
     
-    // CPU-användning i procent (av en enda kärna)
-    const cpuPercent = (cpuMs / elapsedMs) * 100;
+    // Total CPU-belastning över alla kärnor (%)
+    const cpuPercent = (cpuMs / elapsedMs / CPU_COUNT) * 100;
     
     // Minnessanvändning i MB
     const heapChangeMb = Math.max(
@@ -40,6 +43,7 @@ app.use((req, res, next) => {
       0
     );
     
+    // Sätt headers
     res.setHeader('x-cpu', cpuPercent.toFixed(2));
     res.setHeader('x-ram', heapChangeMb.toFixed(2));
     

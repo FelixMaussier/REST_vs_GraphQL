@@ -256,7 +256,7 @@ export const putProduct = async (iterations: number, numOfReq: number) => {
   for (let i = 0; i < iterations; i++) {
     try {
       const validIDs = await fetchRestProductIds(numOfReq);
-      
+
       // Process each ID in the batch
       for (const id of validIDs) {
         const productData = await generateDataForPutProduct();
@@ -274,7 +274,7 @@ export const putProduct = async (iterations: number, numOfReq: number) => {
             namn: productData.namn,
             pris: productData.pris,
             vikt: productData.vikt,
-            produkt_attribut: productData.produkt_attribut
+            produkt_attribut: productData.produkt_attribut,
           }),
         });
 
@@ -304,7 +304,10 @@ export const putProduct = async (iterations: number, numOfReq: number) => {
   };
 };
 
-export const restDeleteProduct = async (iterations: number, numOfReq: number) => {
+export const restDeleteProduct = async (
+  iterations: number,
+  numOfReq: number
+) => {
   const responseTime = [];
   const ramArray = [];
   const cpuArray = [];
@@ -314,32 +317,35 @@ export const restDeleteProduct = async (iterations: number, numOfReq: number) =>
   for (let i = 0; i < iterations; i++) {
     try {
       const validIDs = await fetchRestProductIds(numOfReq);
-      
+
       const startTime = performance.now();
-      
-      const deletePromises = validIDs.map(id => 
+
+      const deletePromises = validIDs.map((id) =>
         fetch(`http://localhost:3002/products/${id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-          }
+          },
         })
       );
 
       const responses = await Promise.all(deletePromises);
-      const bodies = await Promise.all(responses.map(res => res.text()));
-      
+      const bodies = await Promise.all(responses.map((res) => res.text()));
+
       const totalTime = performance.now() - startTime;
       responseTime.push(totalTime);
-      
+
       cpuArray.push(responses[0].headers.get("x-cpu"));
       ramArray.push(responses[0].headers.get("x-ram"));
 
       // Beräkna total storlek för alla svar
-      const totalSize = bodies.reduce((acc, body) => acc + Buffer.byteLength(body, "utf8"), 0);
+      const totalSize = bodies.reduce(
+        (acc, body) => acc + Buffer.byteLength(body, "utf8"),
+        0
+      );
       const sizeInKB = totalSize / 1024;
       sizeInBytes.push(sizeInKB);
-      
+
       await sleep(300);
     } catch (error) {
       console.error("Error during iteration:", error);
@@ -354,8 +360,7 @@ export const restDeleteProduct = async (iterations: number, numOfReq: number) =>
     ramArr: ramArray,
     sizeInBytes: sizeInBytes,
   };
-  
-  console.log("Returning result:", result);
+
   return result;
 };
 
@@ -437,4 +442,3 @@ const generateDataForPutProduct = async () => {
 };
 
 //#endregion
-

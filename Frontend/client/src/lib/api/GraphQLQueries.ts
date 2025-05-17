@@ -316,7 +316,6 @@ export const deleteProduct = async (id: any) => {
   });
 
   const data = await response.json();
-  console.log("Delete response:", data);
   
   if (data.errors) {
     console.error("GraphQL errors:", data.errors);

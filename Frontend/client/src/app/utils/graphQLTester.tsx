@@ -273,12 +273,12 @@ export const graphPutProduct = async (iterations: number, numOfReq: number) => {
   for (let i = 0; i < iterations; i++) {
     try {
       const validIDs = await fetchGraphQLProductIds(numOfReq);
-      
+
       // Process each ID in the batch
       for (const id of validIDs) {
         const productData = await generateDataForPutProduct();
         const startTime = performance.now();
-        
+
         const data = await putProduct(id, productData);
 
         const totalTime = performance.now() - startTime;
@@ -308,7 +308,10 @@ export const graphPutProduct = async (iterations: number, numOfReq: number) => {
   };
 };
 
-export const graphDeleteProduct = async (iterations: number, numOfReq: number) => {
+export const graphDeleteProduct = async (
+  iterations: number,
+  numOfReq: number
+) => {
   const responseTime = [];
   const ramArray = [];
   const cpuArray = [];
@@ -318,10 +321,9 @@ export const graphDeleteProduct = async (iterations: number, numOfReq: number) =
   for (let i = 0; i < iterations; i++) {
     try {
       const validIDs = await fetchGraphQLProductIds(numOfReq);
-      console.log("Got validIDs:", validIDs);
-      
+
       const startTime = performance.now();
-      
+
       const deletePromises = validIDs.map(async (id) => {
         try {
           return await deleteProduct(id);
@@ -332,8 +334,8 @@ export const graphDeleteProduct = async (iterations: number, numOfReq: number) =
       });
 
       const responses = await Promise.all(deletePromises);
-      const successfulResponses = responses.filter(r => r !== null);
-      
+      const successfulResponses = responses.filter((r) => r !== null);
+
       if (successfulResponses.length === 0) {
         console.error("All delete operations failed in this iteration");
         continue;
@@ -341,15 +343,18 @@ export const graphDeleteProduct = async (iterations: number, numOfReq: number) =
 
       const totalTime = performance.now() - startTime;
       responseTime.push(totalTime);
-      
+
       cpuArray.push(successfulResponses[0].cpu);
       ramArray.push(successfulResponses[0].ram);
 
-      const totalSize = successfulResponses.reduce((acc, response) => 
-        acc + Buffer.byteLength(JSON.stringify(response.data), "utf8"), 0);
+      const totalSize = successfulResponses.reduce(
+        (acc, response) =>
+          acc + Buffer.byteLength(JSON.stringify(response.data), "utf8"),
+        0
+      );
       const sizeInKB = totalSize / 1024;
       sizeInBytes.push(sizeInKB);
-      
+
       await sleep(300);
     } catch (error) {
       console.error("Error during iteration:", error);
@@ -364,8 +369,6 @@ export const graphDeleteProduct = async (iterations: number, numOfReq: number) =
     ramArr: ramArray,
     sizeInBytes: sizeInBytes,
   };
-  
-  console.log("Returning result:", result);
   return result;
 };
 
