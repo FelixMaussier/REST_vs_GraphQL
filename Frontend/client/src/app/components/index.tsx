@@ -28,6 +28,7 @@ import {
   putProduct,
 } from "../utils/restTester";
 import ChartTest from "./graphs/Chart";
+import { saveToJson } from "../utils/saveToJson";
 
 const useApiMetrics = () => {
   const [restData, setRestData] = useState({
@@ -75,7 +76,7 @@ const useApiMetrics = () => {
 const Index = () => {
   const { restData, graphqlData, updateMetrics } = useApiMetrics();
   const [numOfReq, setNumOfReq] = useState<number>(10);
-  const [iterations, setIterations] = useState<number>(3);
+  const [iterations, setIterations] = useState<number>(10);
 
   const performanceData = {
     rounds: restData.cpuArr.map((_, index) => ({
@@ -101,48 +102,68 @@ const Index = () => {
   const rest_Products = async () => {
     const results = await getProducts(iterations, numOfReq);
     updateMetrics(results);
-    console.log("index, rest_Products: ", results);
+    console.log("rest: endpont: /getProducts: ", results);
+    saveToJson("REST", "/getProducts", iterations, numOfReq, results);
   };
 
   const rest_Products_3 = async () => {
     const results = await getProducts_3_tables(iterations, numOfReq);
     updateMetrics(results);
     console.log("index, rest_products_3: ", results);
+    saveToJson("REST", "/getProducts_3", iterations, numOfReq, results);
   };
   const rest_ProductsID = async () => {
     const results = await getProductsID(iterations, numOfReq);
     updateMetrics(results);
     console.log("index, rest_ProductsID: ", results);
+    saveToJson("REST", "/getProduc/:id", iterations, numOfReq, results);
   };
 
   const rest_Products_2_fields = async () => {
     const results = await getProducts_2_fields(iterations, numOfReq);
     updateMetrics(results);
     console.log("index, rest_Products: ", results);
+    saveToJson(
+      "REST",
+      "/getProducts (2 fields)",
+      iterations,
+      numOfReq,
+      results
+    );
   };
 
   const rest_PostProducts = async () => {
     const results = await postProducts(iterations, numOfReq);
     console.log("index, rest_postProduct   ", results);
     updateMetrics(results);
+    saveToJson("REST", "/postProducts", iterations, numOfReq, results);
   };
 
   const rest_PostProducts_3 = async () => {
     const results = await postProducts_3(iterations, numOfReq);
     console.log("index, rest_postProduct_3  ", results);
     updateMetrics(results);
+    saveToJson(
+      "REST",
+      "/postProducts (3 fields)",
+      iterations,
+      numOfReq,
+      results
+    );
   };
 
   const rest_PutProducts = async () => {
     const results = await putProduct(iterations, numOfReq);
     console.log("index, rest put_product:", results);
     updateMetrics(results);
+    saveToJson("REST", "/putProducts", iterations, numOfReq, results);
   };
 
   const rest_DeleteProducts = async () => {
     const results = await restDeleteProduct(iterations, numOfReq);
     console.log("index, rest_deleteData", results);
     updateMetrics(results);
+    saveToJson("REST", "/deleteProducts", iterations, numOfReq, results);
   };
 
   //#endregion
@@ -153,18 +174,21 @@ const Index = () => {
     const results = await graphGetProducts(iterations, numOfReq);
     updateMetrics(results, true);
     console.log("index, graph_getProducts: ", results);
+    saveToJson("GraphQL", "getProducts", iterations, numOfReq, results);
   };
 
   const graph_GetProducts_3 = async () => {
     const results = await graphGetProducts_3(iterations, numOfReq);
     updateMetrics(results, true);
     console.log("index, graph_graph_3", results);
+    saveToJson("GraphQL", "getProducts_3", iterations, numOfReq, results);
   };
 
   const graph_GetProductsById = async () => {
     const results = await graphGetProductsByID(iterations, numOfReq);
     updateMetrics(results, true);
     console.log("index, graph_getProductByID: ", results);
+    saveToJson("GraphQL", "getProduct", iterations, numOfReq, results);
   };
 
   const graph_GetProducts_2_fields = async () => {
@@ -172,6 +196,13 @@ const Index = () => {
 
     console.log("index, graph_getProduct_2_fields", results);
     updateMetrics(results, true);
+    saveToJson(
+      "GraphQL",
+      "getProducts (2 fields)",
+      iterations,
+      numOfReq,
+      results
+    );
   };
 
   const graph_PostProduct = async () => {
@@ -179,23 +210,33 @@ const Index = () => {
 
     console.log("index, graph_postProduct ", results);
     updateMetrics(results, true);
+    saveToJson("GraphQL", "postProduct", iterations, numOfReq, results);
   };
 
   const graph_PostProduct_3 = async () => {
     const results = await graphPostProduct_3(iterations, numOfReq);
     console.log("index, graph_postProduct_3 ", results);
     updateMetrics(results, true);
+    saveToJson(
+      "GraphQL",
+      "postProduct (3 tables)",
+      iterations,
+      numOfReq,
+      results
+    );
   };
   const graph_PutProduct = async () => {
     const results = await graphPutProduct(iterations, numOfReq);
     console.log("index, graph_PutProduct: ", results);
     updateMetrics(results, true);
+    saveToJson("GraphQL", "putProduct", iterations, numOfReq, results);
   };
 
   const graph_DeleteProduct = async () => {
     const results = await graphDeleteProduct(iterations, numOfReq);
     console.log("index, graph_DeleteProduct: ", results);
     updateMetrics(results, true);
+    saveToJson("GraphQL", "deleteProduct", iterations, numOfReq, results);
   };
   //#endregion
 

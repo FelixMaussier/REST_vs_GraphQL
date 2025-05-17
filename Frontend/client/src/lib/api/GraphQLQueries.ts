@@ -200,9 +200,6 @@ export const postProduct = async (product: any) => {
 
 
 export const postProduct_3 = async (product: any) => {
-
-  console.log("new productData: ")
-
   const query = `
   mutation postProduct_3($input: ProduktInput!) {
     postProduct_3(input: $input) {

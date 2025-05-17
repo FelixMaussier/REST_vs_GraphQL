@@ -273,23 +273,27 @@ export const graphPutProduct = async (iterations: number, numOfReq: number) => {
   for (let i = 0; i < iterations; i++) {
     try {
       const validIDs = await fetchGraphQLProductIds(numOfReq);
-      const productData = await generateDataForPutProduct();
-      const startTime = performance.now();
       
-      const data = await putProduct(validIDs[i], productData);
+      // Process each ID in the batch
+      for (const id of validIDs) {
+        const productData = await generateDataForPutProduct();
+        const startTime = performance.now();
+        
+        const data = await putProduct(id, productData);
 
-      const totalTime = performance.now() - startTime;
+        const totalTime = performance.now() - startTime;
 
-      responseTime.push(totalTime);
-      cpuArray.push(data.cpu);
-      ramArray.push(data.ram);
+        responseTime.push(totalTime);
+        cpuArray.push(data.cpu);
+        ramArray.push(data.ram);
 
-      const responseBody = JSON.stringify(data.data);
+        const responseBody = JSON.stringify(data.data);
 
-      const size = Buffer.byteLength(responseBody, "utf8");
-      const sizeInKB = size / 1024;
-      sizeInBytes.push(sizeInKB);
-      await sleep(300);
+        const size = Buffer.byteLength(responseBody, "utf8");
+        const sizeInKB = size / 1024;
+        sizeInBytes.push(sizeInKB);
+        await sleep(300);
+      }
     } catch (error) {
       console.error("Error during iteration:", error);
     }

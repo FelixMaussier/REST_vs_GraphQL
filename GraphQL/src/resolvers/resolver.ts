@@ -3,7 +3,7 @@ import db from '../config/db';
 const resolvers = {
 //#region QUERY
         getProducts: async ({ limit }: any) => {
-          return db('produkt').select('*').limit(limit);
+          return db('produkt').select('*').orderByRaw('RANDOM()').limit(limit);
         },
         getProducts_3: async({ limit }: any) => {
           const products = await db('produkt').select(
@@ -13,6 +13,7 @@ const resolvers = {
             'produkt.pris',
             'kategori.namn as kategori_namn'
           ).leftJoin('kategori', 'produkt.kategori_id', 'kategori.id')
+          .orderByRaw('RANDOM()')
           .limit(limit);
         const productsWithAttributes = await Promise.all(
           products.map(async (product) => {
@@ -39,10 +40,14 @@ const resolvers = {
           return await db('produkt').where({ id }).first();
         },
         getProduct_2_fields: async ({ limit }: any) => {
-          return await db('produkt').select('namn', 'beskrivning').limit(limit)
+          return await db('produkt').select('namn', 'beskrivning')
+          .orderByRaw('RANDOM()')
+          .limit(limit)
         },
         getRandomProductID: async ({limit}: any) => {
-          return await db('produkt').pluck('id').orderByRaw('RANDOM()').limit(limit)
+          return await db('produkt').pluck('id')
+          .orderByRaw('RANDOM()')
+          .limit(limit)
         },
         getCategories: async ({ limit }: any) => {
           return await db('kategori').select('*').limit(limit);
@@ -74,8 +79,6 @@ postProduct: async ({ input }: any) => {
 },
 
 postProduct_3: async ({ input }: any) => {
-
-  console.log("helo")
   console.log(input);
   return await db.transaction(async (trx) => {
     const [newProduct] = await trx('produkt')

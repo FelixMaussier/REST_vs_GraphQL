@@ -1,16 +1,13 @@
-//import express from 'express';
-import express, { Request, Response } from 'express';
-import process from 'process';
+import express from 'express';
 const api = express.Router();
 import db from '../config/db';
 
 //#region GET
-
-
 api.get('/products', async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit as string) || 10;
-    const products = await db('produkt').select('*').limit(limit);
+    const limit = parseInt(req.query.limit as string);
+    const products = await db('produkt').select('*').orderByRaw('RANDOM()').limit(limit);
+    console.log(products);
     res.json({ data: products });
   } catch (err) {
     console.error('Error in /products:', err);
@@ -20,9 +17,7 @@ api.get('/products', async (req, res) => {
 
 api.get('/products_3', async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit as string) || 10;
-
-    // Hämta produkter med kategori-info (se till att inkludera id)
+    const limit = parseInt(req.query.limit as string);
     const products = await db('produkt')
       .select(
         'produkt.id',
@@ -33,6 +28,7 @@ api.get('/products_3', async (req, res) => {
         'kategori.beskrivning as kategori_beskrivning'
       )
       .leftJoin('kategori', 'produkt.kategori_id', 'kategori.id')
+      .orderByRaw('RANDOM()')
       .limit(limit);
 
     const productsWithAttributes = await Promise.all(
@@ -110,7 +106,9 @@ api.get('/getProducts_2_fields', async (req, res) => {
   const limit = parseInt(req.query.limit as string) || 10;
 
   try {
-    const allProducts = await db('produkt').select('*').limit(limit);
+    const allProducts = await db('produkt').select('*')
+    .orderByRaw('RANDOM()')
+    .limit(limit);
 
     const filteredProducts = allProducts.map(product => ({
       namn: product.namn,
@@ -160,12 +158,10 @@ api.post('/products', async (req, res) => {
         vikt,
         beskrivning,
         kategori_id,
-        produkt_attribut, // Här hämtar vi attributen
+        produkt_attribut, 
       } = req.body;
   
-      // Börja en databas-transaktion för att skapa produkten och attributen
       const newProduct = await db.transaction(async (trx) => {
-        // Skapa en ny produkt i "produkt" tabellen
         const [newProduct] = await trx('produkt')
           .insert({
             artikelnummer,
@@ -216,6 +212,8 @@ api.post('/products', async (req, res) => {
 api.put('/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("ID======" ,id);
+    const productIds = await db('produkt').select('id').orderByRaw('RANDOM()');
     const { produkt_attribut, ...productData } = req.body;
 
     const updatedProduct = await db.transaction(async (trx) => {
@@ -255,7 +253,7 @@ api.put('/products/:id', async (req, res) => {
 
     res.json(updatedProduct);
   } catch (error) {
-    console.error("Error updating product:", error);
+    console.error("Error updating product:");
     res.status(500).json({ error: "Something went wrong!" });
   }
 });

@@ -254,36 +254,44 @@ export const putProduct = async (iterations: number, numOfReq: number) => {
 
   const totalStartTime = performance.now();
   for (let i = 0; i < iterations; i++) {
-    const validIDs = await fetchRestProductIds(numOfReq);
-    const productData = await generateDataForPutProduct();
-    const startTime = performance.now();
-    const data = await fetch(`http://localhost:3002/products/${validIDs[i]}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        artikelnummer: productData.artikelnummer,
-        beskrivning: productData.beskrivning,
-        kategori_id: productData.kategori_id,
-        lagerantal: productData.lagerantal,
-        namn: productData.namn,
-        pris: productData.pris,
-        vikt: productData.vikt,
-        produkt_attribut: productData.produkt_attribut
-      }),
-    });
+    try {
+      const validIDs = await fetchRestProductIds(numOfReq);
+      
+      // Process each ID in the batch
+      for (const id of validIDs) {
+        const productData = await generateDataForPutProduct();
+        const startTime = performance.now();
+        const data = await fetch(`http://localhost:3002/products/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            artikelnummer: productData.artikelnummer,
+            beskrivning: productData.beskrivning,
+            kategori_id: productData.kategori_id,
+            lagerantal: productData.lagerantal,
+            namn: productData.namn,
+            pris: productData.pris,
+            vikt: productData.vikt,
+            produkt_attribut: productData.produkt_attribut
+          }),
+        });
 
-    const body = await data.text();
-    const totalTime = performance.now() - startTime;
-    responseTime.push(totalTime);
-    cpuArray.push(data.headers.get("x-cpu"));
-    ramArray.push(data.headers.get("x-ram"));
+        const body = await data.text();
+        const totalTime = performance.now() - startTime;
+        responseTime.push(totalTime);
+        cpuArray.push(data.headers.get("x-cpu"));
+        ramArray.push(data.headers.get("x-ram"));
 
-    const size = Buffer.byteLength(body, "utf8");
-    const sizeInKB = size / 1024;
-    sizeInBytes.push(sizeInKB);
-    await sleep(300);
+        const size = Buffer.byteLength(body, "utf8");
+        const sizeInKB = size / 1024;
+        sizeInBytes.push(sizeInKB);
+        await sleep(300);
+      }
+    } catch (error) {
+      console.error(`Error in iteration ${i + 1}:`, error);
+    }
   }
   const totalDuration = performance.now() - totalStartTime;
 
@@ -306,11 +314,9 @@ export const restDeleteProduct = async (iterations: number, numOfReq: number) =>
   for (let i = 0; i < iterations; i++) {
     try {
       const validIDs = await fetchRestProductIds(numOfReq);
-      console.log("Got validIDs:", validIDs);
       
       const startTime = performance.now();
       
-      // Skapa en array av delete-anrop för alla ID:n
       const deletePromises = validIDs.map(id => 
         fetch(`http://localhost:3002/products/${id}`, {
           method: "DELETE",
@@ -320,16 +326,12 @@ export const restDeleteProduct = async (iterations: number, numOfReq: number) =>
         })
       );
 
-      // Vänta på att alla delete-anrop ska slutföras
       const responses = await Promise.all(deletePromises);
       const bodies = await Promise.all(responses.map(res => res.text()));
-      
-      console.log("Delete responses:", bodies);
       
       const totalTime = performance.now() - startTime;
       responseTime.push(totalTime);
       
-      // Använd första svaret för CPU och RAM (eller ta genomsnittet om du vill)
       cpuArray.push(responses[0].headers.get("x-cpu"));
       ramArray.push(responses[0].headers.get("x-ram"));
 

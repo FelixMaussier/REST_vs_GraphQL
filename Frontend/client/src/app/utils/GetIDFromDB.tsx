@@ -8,8 +8,8 @@ export const fetchRestProductIds = async (
   numOfReq: number
 ): Promise<number[]> => {
   const response = await fetch(`${rest_url}/getRandomID?limit=${numOfReq}`);
-  const data = await response.json();
 
+  const data = await response.json();
   return data;
 };
 
