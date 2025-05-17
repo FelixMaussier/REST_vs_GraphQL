@@ -44,7 +44,6 @@ app.use((req, res, next) => {
       0
     );
     
-    // Endast returnera RAM och CPU-procent
     res.setHeader('x-cpu', cpuPercent.toFixed(2));
     res.setHeader('x-ram', heapChangeMb.toFixed(2));
     
