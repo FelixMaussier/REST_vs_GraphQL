@@ -55,6 +55,7 @@ app.use((req, res, next) => {
   
   next();
 });
+
 app.use('/graphql', graphqlHTTP({
   schema,
   rootValue: resolvers,
